@@ -63,7 +63,15 @@ public final class QueryBus implements IQueryBus {
                         "No handler registered for " + query.getClass().getName());
             }
             final CompletableFuture<R> completableFuture = new CompletableFuture<>();
-            executors.submit(() -> completableFuture.complete(handler.handle(query)));
+            executors.submit(
+                    () -> {
+                        try {
+                            completableFuture.complete(handler.handle(query));
+                        } catch (Exception e) {
+                            LOGGER.error(e.getMessage());
+                            completableFuture.completeExceptionally(e);
+                        }
+                    });
             return completableFuture;
         } catch (Exception e) {
             LOGGER.error(e.getMessage());
