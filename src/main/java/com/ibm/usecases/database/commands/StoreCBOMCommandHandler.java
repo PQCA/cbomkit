@@ -25,9 +25,9 @@ import app.bootstrap.core.cqrs.ICommandHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ibm.infrastructure.database.readmodels.CBOMReadModel;
 import com.ibm.infrastructure.database.readmodels.CBOMReadRepository;
-import io.quarkus.arc.Arc;
-import io.quarkus.arc.ArcContainer;
 import io.quarkus.runtime.StartupEvent;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
@@ -35,7 +35,6 @@ import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.UUID;
-import org.cyclonedx.exception.ParseException;
 import org.cyclonedx.model.Bom;
 import org.cyclonedx.model.Property;
 import org.cyclonedx.parsers.BomParserFactory;
@@ -54,51 +53,44 @@ public class StoreCBOMCommandHandler implements ICommandHandler {
     }
 
     void onStart(@Observes StartupEvent event) {
-        commandBus.register(this);
+        commandBus.register(this, StoreCBOMCommand.class);
     }
 
     @Override
-    public void handle(ICommand command) throws Exception {
+    public void handle(@Nonnull ICommand command) throws Exception {
+        if (command
+                instanceof
+                StoreCBOMCommand(@Nonnull String projectIdentifier, @Nonnull String cbomJson)) {
+            // validate that data is valid CBOM
+            byte[] cbomBytes = cbomJson.getBytes(StandardCharsets.UTF_8);
+            final Parser parser = BomParserFactory.createParser(cbomBytes);
+            final Bom bom = parser.parse(cbomBytes);
 
-        if (!(command instanceof StoreCBOMCommand storeCommand)) {
-            return;
-        }
-
-        final ArcContainer container = Arc.container();
-        container.requestContext().activate();
-        try {
-
-            String projectIdentifier = storeCommand.projectIdentifier();
-            ObjectMapper mapper = new ObjectMapper();
-
-            readRepository
+            // delete existing CBOM
+            this.readRepository
                     .findBy(projectIdentifier)
                     .ifPresent(existing -> readRepository.delete(existing.getId()));
-            UUID cbomUUID = UUID.randomUUID();
-            String repository = "manual-upload-" + cbomUUID;
-            String revision = null;
-            String packageFolder = null;
-            String commit = null;
 
-            try {
-                byte[] cbomBytes = storeCommand.cbomJson().getBytes(StandardCharsets.UTF_8);
-                Parser parser = BomParserFactory.createParser(cbomBytes);
-                Bom bom = parser.parse(cbomBytes);
-                if (bom.getMetadata() != null && bom.getMetadata().getProperties() != null) {
-                    for (Property property : bom.getMetadata().getProperties()) {
-                        switch (property.getName()) {
-                            case "gitUrl" -> repository = property.getValue();
-                            case "revision" -> revision = property.getValue();
-                            case "commit" -> commit = property.getValue();
-                            case "subfolder" -> packageFolder = property.getValue();
-                            default -> {}
-                        }
+            @Nonnull UUID cbomUUID = UUID.randomUUID();
+            @Nonnull String repository = "manual-upload-" + cbomUUID;
+
+            @Nullable String revision = null;
+            @Nullable String packageFolder = null;
+            @Nullable String commit = null;
+
+            // extract amd override default properties with CBOM metadata
+            if (bom.getMetadata() != null && bom.getMetadata().getProperties() != null) {
+                for (Property property : bom.getMetadata().getProperties()) {
+                    switch (property.getName()) {
+                        case "gitUrl" -> repository = property.getValue();
+                        case "revision" -> revision = property.getValue();
+                        case "commit" -> commit = property.getValue();
+                        case "subfolder" -> packageFolder = property.getValue();
+                        default -> {}
                     }
                 }
-            } catch (ParseException e) {
-                // already validated in resource, ignore
             }
-            CBOMReadModel model =
+            final CBOMReadModel model =
                     new CBOMReadModel(
                             cbomUUID,
                             projectIdentifier,
@@ -107,14 +99,8 @@ public class StoreCBOMCommandHandler implements ICommandHandler {
                             packageFolder,
                             commit,
                             Timestamp.from(Instant.now()),
-                            mapper.readTree(storeCommand.cbomJson()));
-
+                            (new ObjectMapper()).readTree(cbomJson));
             readRepository.save(model);
-        } catch (Exception e) {
-
-            throw e;
-        } finally {
-            container.requestContext().terminate();
         }
     }
 }

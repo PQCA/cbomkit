@@ -19,10 +19,12 @@
  */
 package com.ibm.infrastructure.progress;
 
-public class NoOpProgressDispatcher implements IProgressDispatcher {
+import jakarta.annotation.Nonnull;
+
+public class EmptyProgressDispatcher implements IProgressDispatcher {
 
     @Override
-    public void send(ProgressMessage message) {
+    public void send(@Nonnull ProgressMessage message) {
         // do nothing
     }
 }
