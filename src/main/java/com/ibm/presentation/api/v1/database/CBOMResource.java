@@ -95,10 +95,8 @@ public class CBOMResource {
     @POST
     @Path("/{projectIdentifier}")
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
     public Response storeCBOM(
-            @Nullable @PathParam("projectIdentifier") String projectIdentifier,
-            @Nullable String cbomJson) {
+            @Nullable @RestPath String projectIdentifier, @Nullable String cbomJson) {
         if (projectIdentifier == null) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
@@ -108,7 +106,7 @@ public class CBOMResource {
 
         try {
             commandBus.send(new StoreCBOMCommand(projectIdentifier, cbomJson));
-            return Response.ok("{\"status\":\"CBOM stored\"}").build();
+            return Response.ok().build();
         } catch (Exception e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
@@ -116,7 +114,7 @@ public class CBOMResource {
 
     @DELETE
     @Path("/{projectIdentifier}")
-    public Response deleteCBOM(@Nullable @PathParam("projectIdentifier") String projectIdentifier) {
+    public Response deleteCBOM(@Nullable @RestPath String projectIdentifier) {
         if (projectIdentifier == null) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }

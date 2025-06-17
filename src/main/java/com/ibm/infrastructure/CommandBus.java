@@ -105,7 +105,7 @@ public final class CommandBus implements ICommandBus {
             try {
                 handler.handle(command);
             } catch (Exception e) {
-                LOGGER.error(e.getMessage(), e);
+                LOGGER.error(e.getMessage());
                 allSucceeded = false;
             }
         }

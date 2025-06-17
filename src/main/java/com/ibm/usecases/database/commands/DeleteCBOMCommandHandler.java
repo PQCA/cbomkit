@@ -22,6 +22,7 @@ package com.ibm.usecases.database.commands;
 import app.bootstrap.core.cqrs.ICommand;
 import app.bootstrap.core.cqrs.ICommandBus;
 import app.bootstrap.core.cqrs.ICommandHandler;
+import com.ibm.infrastructure.database.readmodels.CBOMReadModel;
 import com.ibm.infrastructure.database.readmodels.CBOMReadRepository;
 import io.quarkus.runtime.StartupEvent;
 import jakarta.annotation.Nonnull;
@@ -51,9 +52,15 @@ public class DeleteCBOMCommandHandler implements ICommandHandler {
     @Override
     public void handle(@Nonnull ICommand command) throws Exception {
         if (command instanceof DeleteCBOMCommand(@Nonnull String projectIdentifier)) {
-            this.readRepository
-                    .findBy(projectIdentifier)
-                    .ifPresent(existing -> this.readRepository.delete(existing.getId()));
+            final CBOMReadModel cbomReadModel =
+                    this.readRepository
+                            .findBy(projectIdentifier)
+                            .orElseThrow(
+                                    () ->
+                                            new Exception(
+                                                    "No CBOM found for project "
+                                                            + projectIdentifier));
+            this.readRepository.delete(cbomReadModel.getId());
         }
     }
 }
