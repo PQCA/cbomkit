@@ -38,10 +38,6 @@
 
   <repositories>
     <repository>
-      <id>app-bootstrap</id>
-      <url>https://maven.pkg.github.com/n1ckl0sk0rtge/app-bootstrap-core</url>
-    </repository>
-    <repository>
         <id>github</id>
         <url>https://maven.pkg.github.com/PQCA/sonar-cryptography</url>
     </repository>
@@ -95,9 +91,9 @@
     </dependency>
 
     <dependency>
-      <groupId>app.bootstrap.core</groupId>
+      <groupId>io.github.n1ckl0sk0rtge</groupId>
       <artifactId>app-bootstrap-core</artifactId>
-      <version>0.1.14</version>
+      <version>0.2.10</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jgit</groupId>

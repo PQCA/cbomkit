@@ -31,7 +31,12 @@ import com.ibm.infrastructure.progress.ProgressMessageType;
 import com.ibm.infrastructure.progress.WebSocketProgressDispatcher;
 import com.ibm.infrastructure.scanning.IScanConfiguration;
 import com.ibm.infrastructure.scanning.repositories.ScanRepository;
+import com.ibm.usecases.scanning.commands.CloneGitRepositoryCommand;
+import com.ibm.usecases.scanning.commands.IdentifyPackageFolderCommand;
+import com.ibm.usecases.scanning.commands.IndexModulesCommand;
 import com.ibm.usecases.scanning.commands.RequestScanCommand;
+import com.ibm.usecases.scanning.commands.ResolvePurlCommand;
+import com.ibm.usecases.scanning.commands.ScanCommand;
 import com.ibm.usecases.scanning.processmanager.ScanProcessManager;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -43,6 +48,7 @@ import jakarta.websocket.OnOpen;
 import jakarta.websocket.Session;
 import jakarta.websocket.server.PathParam;
 import jakarta.websocket.server.ServerEndpoint;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -108,7 +114,14 @@ public class ScanningResource {
                             scanRepository,
                             webSocketProgressDispatcher,
                             this.configuration);
-            this.commandBus.register(scanProcessManager);
+            this.commandBus.register(
+                    scanProcessManager,
+                    List.of(
+                            ResolvePurlCommand.class,
+                            CloneGitRepositoryCommand.class,
+                            IdentifyPackageFolderCommand.class,
+                            IndexModulesCommand.class,
+                            ScanCommand.class));
 
             final ICredentials authCredentials = getCredentials(scanRequest);
 

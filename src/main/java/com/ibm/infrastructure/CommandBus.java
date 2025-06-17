@@ -24,8 +24,10 @@ import app.bootstrap.core.cqrs.ICommandBus;
 import app.bootstrap.core.cqrs.ICommandHandler;
 import jakarta.annotation.Nonnull;
 import jakarta.inject.Singleton;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.slf4j.Logger;
@@ -35,39 +37,78 @@ import org.slf4j.LoggerFactory;
 public final class CommandBus implements ICommandBus {
     private static final Logger LOGGER = LoggerFactory.getLogger(CommandBus.class);
 
-    private final List<ICommandHandler> commandHandlers;
+    @SuppressWarnings("all")
+    @Nonnull
+    private final Map<Class<? extends ICommand>, List<ICommandHandler>> handlers;
+
+    private final ExecutorService executorService;
 
     public CommandBus() {
-        this.commandHandlers = new ArrayList<>();
+        this.handlers = new ConcurrentHashMap<>();
+        this.executorService = Executors.newCachedThreadPool();
     }
 
     @Override
-    public void register(@Nonnull ICommandHandler commandHandler) {
-        this.commandHandlers.add(commandHandler);
+    public void register(
+            @Nonnull ICommandHandler commandHandler,
+            @Nonnull Class<? extends ICommand> forCommand) {
+        this.handlers
+                .computeIfAbsent(forCommand, k -> new java.util.ArrayList<>())
+                .add(commandHandler);
     }
 
     @Override
-    public void remove(@Nonnull ICommandHandler commandHandler) {
-        this.commandHandlers.remove(commandHandler);
-    }
-
-    @Override
-    public void send(@Nonnull ICommand command) {
-        try (final ExecutorService executors = Executors.newCachedThreadPool()) {
-            LOGGER.info("sending command {}", command);
-            final List<ICommandHandler> copy = new ArrayList<>(commandHandlers);
-            for (final ICommandHandler iCommandHandler : copy) {
-                executors.submit(
-                        () -> {
-                            try {
-                                iCommandHandler.handle(command);
-                            } catch (Exception e) {
-                                LOGGER.error(e.getLocalizedMessage());
-                            }
-                        });
-            }
-        } catch (Exception e) {
-            LOGGER.error(e.getLocalizedMessage());
+    public void register(
+            @Nonnull ICommandHandler commandHandler,
+            @Nonnull List<Class<? extends ICommand>> forCommands) {
+        for (Class<? extends ICommand> forCommand : forCommands) {
+            this.handlers
+                    .computeIfAbsent(forCommand, k -> new java.util.ArrayList<>())
+                    .add(commandHandler);
         }
+    }
+
+    @Override
+    public void remove(
+            @Nonnull ICommandHandler commandHandler,
+            @Nonnull Class<? extends ICommand> forCommand) {
+        List<ICommandHandler> handlersForCommand = this.handlers.get(forCommand);
+        if (handlersForCommand != null) {
+            handlersForCommand.remove(commandHandler);
+            if (handlersForCommand.isEmpty()) {
+                this.handlers.remove(forCommand);
+            }
+        }
+    }
+
+    @Nonnull
+    @Override
+    public CompletableFuture<Boolean> send(@Nonnull ICommand command) throws Exception {
+        LOGGER.info("sending command {}", command);
+        final List<ICommandHandler> handlersForCommand = handlers.get(command.getClass());
+        if (handlersForCommand == null || handlersForCommand.isEmpty()) {
+            LOGGER.error("No handler for command {}", command);
+            return CompletableFuture.completedFuture(false);
+        }
+
+        final CompletableFuture<Boolean> completableFuture = new CompletableFuture<>();
+        this.executorService.submit(
+                () -> completableFuture.complete(executeCommand(handlersForCommand, command)));
+        return completableFuture;
+    }
+
+    @Nonnull
+    private Boolean executeCommand(
+            @Nonnull List<ICommandHandler> handlers, @Nonnull ICommand command) {
+        boolean allSucceeded = true;
+        for (ICommandHandler handler : handlers) {
+            try {
+                handler.handle(command);
+            } catch (Exception e) {
+                LOGGER.error(e.getMessage(), e);
+                allSucceeded = false;
+            }
+        }
+        return allSucceeded;
     }
 }

@@ -28,7 +28,6 @@ public record ScanRequest(
         @Nonnull ScanUrl scanUrl, @Nonnull Revision revision, @Nullable String subFolder)
         implements IValueObject {
 
-    @Override
     public void validate() throws InvalidScanUrl {
         scanUrl.validate();
     }
