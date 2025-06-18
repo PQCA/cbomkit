@@ -55,7 +55,6 @@ import com.ibm.usecases.scanning.errors.NoProjectDirectoryProvided;
 import com.ibm.usecases.scanning.errors.NoPurlSpecifiedForScan;
 import com.ibm.usecases.scanning.services.git.CloneResultDTO;
 import com.ibm.usecases.scanning.services.git.GitService;
-import com.ibm.usecases.scanning.services.indexing.IBuildType;
 import com.ibm.usecases.scanning.services.indexing.JavaIndexService;
 import com.ibm.usecases.scanning.services.indexing.ProjectModule;
 import com.ibm.usecases.scanning.services.indexing.PythonIndexService;
@@ -77,11 +76,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public final class ScanProcessManager extends ProcessManager<ScanId, ScanAggregate> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ScanProcessManager.class);
 
     @Nonnull private final ScanId scanId;
     @Nonnull private final IProgressDispatcher progressDispatcher;
@@ -90,7 +86,6 @@ public final class ScanProcessManager extends ProcessManager<ScanId, ScanAggrega
 
     @Nullable private File projectDirectory;
     @Nonnull private final Map<Language, List<ProjectModule>> index;
-    @Nonnull private final Map<Language, IBuildType> buildTypes;
 
     public ScanProcessManager(
             @Nonnull ScanId scanId,
@@ -104,7 +99,6 @@ public final class ScanProcessManager extends ProcessManager<ScanId, ScanAggrega
         this.baseCloneDirPath = iScanConfiguration.getBaseCloneDirPath();
         this.javaDependencyJARSPath = iScanConfiguration.getJavaDependencyJARSPath();
         this.index = new EnumMap<>(Language.class);
-        this.buildTypes = new EnumMap<>(Language.class);
     }
 
     @Override
@@ -303,18 +297,12 @@ public final class ScanProcessManager extends ProcessManager<ScanId, ScanAggrega
             final List<ProjectModule> javaIndex =
                     javaIndexService.index(scanAggregate.getPackageFolder().orElse(null));
             this.index.put(Language.JAVA, javaIndex);
-            javaIndexService
-                    .getMainBuildType()
-                    .ifPresent(buildType -> this.buildTypes.put(Language.JAVA, buildType));
             // python
             final PythonIndexService pythonIndexService =
                     new PythonIndexService(this.progressDispatcher, projectDir);
             final List<ProjectModule> pythonIndex =
                     pythonIndexService.index(scanAggregate.getPackageFolder().orElse(null));
             this.index.put(Language.PYTHON, pythonIndex);
-            pythonIndexService
-                    .getMainBuildType()
-                    .ifPresent(buildType -> this.buildTypes.put(Language.PYTHON, buildType));
             // continue with scan
             this.commandBus.send(new ScanCommand(command.id()));
         } catch (Exception e) {
@@ -462,7 +450,14 @@ public final class ScanProcessManager extends ProcessManager<ScanId, ScanAggrega
     @Override
     public void compensate(@Nonnull ScanId id) {
         // unregister process manager
-        this.commandBus.remove(this);
+        this.commandBus.unregister(
+                this,
+                List.of(
+                        ResolvePurlCommand.class,
+                        CloneGitRepositoryCommand.class,
+                        IdentifyPackageFolderCommand.class,
+                        IndexModulesCommand.class,
+                        ScanCommand.class));
         // remove cloned repo
         Optional.ofNullable(this.projectDirectory)
                 .ifPresent(

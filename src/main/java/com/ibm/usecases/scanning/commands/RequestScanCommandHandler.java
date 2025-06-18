@@ -41,7 +41,7 @@ import java.util.Optional;
 public final class RequestScanCommandHandler extends CommandHandler<ScanId, ScanAggregate> {
 
     void onStart(@Observes StartupEvent event) {
-        this.commandBus.register(this);
+        this.commandBus.register(this, RequestScanCommand.class);
     }
 
     public RequestScanCommandHandler(

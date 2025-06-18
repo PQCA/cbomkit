@@ -43,30 +43,6 @@
         "tags" : [ "CBOM Resource" ]
       }
     },
-    "/api/v1/cbom/scan" : {
-      "post" : {
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/ScanRequest"
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "200" : {
-            "description" : "OK"
-          },
-          "400" : {
-            "description" : "Bad Request"
-          }
-        },
-        "summary" : "Scan Repo",
-        "tags" : [ "CBOM Scan Rest Resource" ]
-      }
-    },
     "/api/v1/cbom/{projectIdentifier}" : {
       "post" : {
         "parameters" : [ {
@@ -180,6 +156,30 @@
           }
         },
         "tags" : [ "Compliance Resource" ]
+      }
+    },
+    "/api/v1/scan" : {
+      "post" : {
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ScanRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          },
+          "400" : {
+            "description" : "Bad Request"
+          }
+        },
+        "summary" : "Scan",
+        "tags" : [ "Scanning Resource" ]
       }
     }
   },

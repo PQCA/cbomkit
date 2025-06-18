@@ -29,18 +29,13 @@ import com.ibm.usecases.database.queries.ListStoredCBOMsQuery;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutionException;
-import org.cyclonedx.exception.ParseException;
-import org.cyclonedx.parsers.BomParserFactory;
-import org.cyclonedx.parsers.Parser;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.jboss.resteasy.reactive.RestPath;
 
@@ -48,10 +43,11 @@ import org.jboss.resteasy.reactive.RestPath;
 @ApplicationScoped
 public class CBOMResource {
 
-    @Inject ICommandBus commandBus;
+    @Nonnull protected final ICommandBus commandBus;
     @Nonnull protected final IQueryBus queryBus;
 
-    public CBOMResource(@Nonnull IQueryBus queryBus) {
+    public CBOMResource(@Nonnull ICommandBus commandBus, @Nonnull IQueryBus queryBus) {
+        this.commandBus = commandBus;
         this.queryBus = queryBus;
     }
 
@@ -99,47 +95,45 @@ public class CBOMResource {
     @POST
     @Path("/{projectIdentifier}")
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
     public Response storeCBOM(
-            @PathParam("projectIdentifier") String projectIdentifier, String cbomJson) {
-        try {
-            byte[] cbomBytes = cbomJson.getBytes(StandardCharsets.UTF_8);
-            Parser parser = BomParserFactory.createParser(cbomBytes);
-            parser.parse(cbomBytes);
-        } catch (ParseException e) {
+            @Nullable @RestPath String projectIdentifier, @Nullable String cbomJson) {
+        if (projectIdentifier == null) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
+        if (cbomJson == null) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
         try {
             commandBus.send(new StoreCBOMCommand(projectIdentifier, cbomJson));
-            return Response.ok("{\"status\":\"CBOM stored\"}").build();
+            return Response.ok().build();
         } catch (Exception e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity("{\"error\":\"" + e.getMessage() + "\"}")
-                    .build();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     @DELETE
     @Path("/{projectIdentifier}")
-    public Response deleteCBOM(@PathParam("projectIdentifier") String projectIdentifier) {
+    public Response deleteCBOM(@Nullable @RestPath String projectIdentifier) {
+        if (projectIdentifier == null) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
         try {
-            try {
-                queryBus.send(new GetCBOMByProjectIdentifierQuery(projectIdentifier)).get();
-            } catch (ExecutionException e) {
-                if (e.getCause() instanceof NoCBOMForProjectIdentifierFound) {
-                    return Response.status(Response.Status.NOT_FOUND).build();
-                }
+            boolean success = this.commandBus.send(new DeleteCBOMCommand(projectIdentifier)).get();
+            if (success) {
+                return Response.ok().build();
+            } else {
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
             }
-            commandBus.send(new DeleteCBOMCommand(projectIdentifier));
-            return Response.ok("{\"status\":\"CBOM deleted\"}").build();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         } catch (Exception e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity("{\"error\":\"" + e.getMessage() + "\"}")
-                    .build();
+            if (e.getCause() instanceof NoCBOMForProjectIdentifierFound) {
+                return Response.status(Response.Status.NOT_FOUND).build();
+            }
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
     }
 }

@@ -22,10 +22,10 @@ package com.ibm.usecases.database.commands;
 import app.bootstrap.core.cqrs.ICommand;
 import app.bootstrap.core.cqrs.ICommandBus;
 import app.bootstrap.core.cqrs.ICommandHandler;
+import com.ibm.infrastructure.database.readmodels.CBOMReadModel;
 import com.ibm.infrastructure.database.readmodels.CBOMReadRepository;
-import io.quarkus.arc.Arc;
-import io.quarkus.arc.ArcContainer;
 import io.quarkus.runtime.StartupEvent;
+import jakarta.annotation.Nonnull;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
@@ -46,24 +46,21 @@ public class DeleteCBOMCommandHandler implements ICommandHandler {
     }
 
     void onStart(@Observes StartupEvent event) {
-        commandBus.register(this);
+        commandBus.register(this, DeleteCBOMCommand.class);
     }
 
     @Override
-    public void handle(ICommand command) throws Exception {
-        if (!(command instanceof DeleteCBOMCommand deleteCommand)) {
-            return;
-        }
-
-        final ArcContainer container = Arc.container();
-        container.requestContext().activate();
-        try {
-            String projectIdentifier = deleteCommand.projectIdentifier();
-            this.readRepository
-                    .findBy(projectIdentifier)
-                    .ifPresent(existing -> this.readRepository.delete(existing.getId()));
-        } finally {
-            container.requestContext().terminate();
+    public void handle(@Nonnull ICommand command) throws Exception {
+        if (command instanceof DeleteCBOMCommand(@Nonnull String projectIdentifier)) {
+            final CBOMReadModel cbomReadModel =
+                    this.readRepository
+                            .findBy(projectIdentifier)
+                            .orElseThrow(
+                                    () ->
+                                            new Exception(
+                                                    "No CBOM found for project "
+                                                            + projectIdentifier));
+            this.readRepository.delete(cbomReadModel.getId());
         }
     }
 }
