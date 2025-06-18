@@ -450,11 +450,14 @@ public final class ScanProcessManager extends ProcessManager<ScanId, ScanAggrega
     @Override
     public void compensate(@Nonnull ScanId id) {
         // unregister process manager
-        this.commandBus.remove(this, ResolvePurlCommand.class);
-        this.commandBus.remove(this, CloneGitRepositoryCommand.class);
-        this.commandBus.remove(this, IdentifyPackageFolderCommand.class);
-        this.commandBus.remove(this, IndexModulesCommand.class);
-        this.commandBus.remove(this, ScanCommand.class);
+        this.commandBus.unregister(
+                this,
+                List.of(
+                        ResolvePurlCommand.class,
+                        CloneGitRepositoryCommand.class,
+                        IdentifyPackageFolderCommand.class,
+                        IndexModulesCommand.class,
+                        ScanCommand.class));
         // remove cloned repo
         Optional.ofNullable(this.projectDirectory)
                 .ifPresent(

@@ -69,7 +69,7 @@ public final class CommandBus implements ICommandBus {
     }
 
     @Override
-    public void remove(
+    public void unregister(
             @Nonnull ICommandHandler commandHandler,
             @Nonnull Class<? extends ICommand> forCommand) {
         List<ICommandHandler> handlersForCommand = this.handlers.get(forCommand);
@@ -78,6 +78,15 @@ public final class CommandBus implements ICommandBus {
             if (handlersForCommand.isEmpty()) {
                 this.handlers.remove(forCommand);
             }
+        }
+    }
+
+    @Override
+    public void unregister(
+            @Nonnull ICommandHandler commandHandler,
+            @Nonnull List<Class<? extends ICommand>> forCommands) {
+        for (Class<? extends ICommand> forCommand : forCommands) {
+            unregister(commandHandler, forCommand);
         }
     }
 
