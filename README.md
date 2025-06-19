@@ -9,8 +9,10 @@ CBOMkit is a toolset for dealing with Cryptography Bill of Materials (CBOM). CBO
 - **CBOM Compliance Check**: Evaluate CBOMs created or uploaded against specified compliance policies and receive detailed compliance status reports.
 - **CBOM Database**: Collect and store CBOMs into the database and expose this data through a RESTful API.
 
-
 ![CBOMkit Demo](.github/img/cbomkit.gif)
+
+> [!WARNING]
+> The CBOMkit service does not build any repository prior to scanning. For Java repositories in particular, this means that we cannot rely on any build results (class files, jars) that could improve the scanning result. This potentially reduces completeness and accuracy of the findings since some Java symbols may not be resolved. For better results, use the [sonar-cryptography-plugin](https://github.com/PQCA/sonar-cryptography) together with SonarQube or [CBOMkit-action](https://github.com/PQCA/cbomkit-action) embedded in a pipeline definition that builds the code before scanning.
 
 ## Quickstart
 
@@ -152,10 +154,6 @@ and cryptographic libraries:
 While the CBOMkit's scanning capabilities are currently bound to the Sonar Cryptography Plugin, the modular 
 design of this plugin allows for potential expansion to support additional languages and cryptographic libraries in 
 future updates.
-
-## Disclaimer
-
-The CBOMkit service does not build any repository prior to scanning. For Java repositories in particular, this means that we cannot rely on any build results (class files, jars) that could improve the scanning result. This potentially reduces completeness and accuracy of the findings since some Java symbols may not be resolved. For better results, use [CBOMkit-action](https://github.com/PQCA/cbomkit-action) embedded in a pipeline definition that builds the code before scanning.
 
 ## Contribution Guidelines
 
