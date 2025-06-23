@@ -20,6 +20,8 @@
 package com.ibm.infrastructure.progress;
 
 import jakarta.annotation.Nonnull;
+import org.pqca.progress.IProgressDispatcher;
+import org.pqca.progress.ProgressMessage;
 
 public class EmptyProgressDispatcher implements IProgressDispatcher {
 

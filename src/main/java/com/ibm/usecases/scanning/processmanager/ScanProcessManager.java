@@ -66,7 +66,6 @@ import java.util.Optional;
 import org.apache.commons.io.FileUtils;
 import org.pqca.errors.CBOMSerializationFailed;
 import org.pqca.errors.ClientDisconnected;
-import org.pqca.indexing.IBuildType;
 import org.pqca.indexing.ProjectModule;
 import org.pqca.indexing.java.JavaIndexService;
 import org.pqca.indexing.python.PythonIndexService;
