@@ -26,8 +26,6 @@ import com.ibm.domain.scanning.ScanId;
 import com.ibm.domain.scanning.authentication.ICredentials;
 import com.ibm.domain.scanning.authentication.PersonalAccessToken;
 import com.ibm.domain.scanning.authentication.UsernameAndPasswordCredentials;
-import com.ibm.infrastructure.progress.ProgressMessage;
-import com.ibm.infrastructure.progress.ProgressMessageType;
 import com.ibm.infrastructure.progress.WebSocketProgressDispatcher;
 import com.ibm.infrastructure.scanning.IScanConfiguration;
 import com.ibm.infrastructure.scanning.repositories.ScanRepository;
@@ -46,6 +44,8 @@ import jakarta.websocket.server.ServerEndpoint;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import org.pqca.progress.ProgressMessage;
+import org.pqca.progress.ProgressMessageType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

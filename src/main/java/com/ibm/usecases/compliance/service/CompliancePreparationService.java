@@ -20,8 +20,6 @@
 package com.ibm.usecases.compliance.service;
 
 import com.ibm.domain.compliance.CryptographicAsset;
-import com.ibm.domain.scanning.CBOM;
-import com.ibm.domain.scanning.errors.CBOMSerializationFailed;
 import com.ibm.infrastructure.database.readmodels.CBOMReadModel;
 import com.ibm.infrastructure.database.readmodels.ICBOMReadRepository;
 import com.ibm.usecases.compliance.errors.CouldNotFindCBOMForGitRepository;
@@ -33,6 +31,8 @@ import org.cyclonedx.exception.ParseException;
 import org.cyclonedx.model.Bom;
 import org.cyclonedx.parsers.BomParserFactory;
 import org.cyclonedx.parsers.Parser;
+import org.pqca.errors.CBOMSerializationFailed;
+import org.pqca.scanning.CBOM;
 
 public final class CompliancePreparationService {
 

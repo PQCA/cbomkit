@@ -24,7 +24,6 @@ import app.bootstrap.core.cqrs.ICommandBus;
 import app.bootstrap.core.cqrs.ProcessManager;
 import app.bootstrap.core.ddd.IRepository;
 import com.github.packageurl.PackageURL;
-import com.ibm.domain.scanning.CBOM;
 import com.ibm.domain.scanning.Commit;
 import com.ibm.domain.scanning.GitUrl;
 import com.ibm.domain.scanning.Language;
@@ -32,13 +31,8 @@ import com.ibm.domain.scanning.LanguageScan;
 import com.ibm.domain.scanning.ScanAggregate;
 import com.ibm.domain.scanning.ScanId;
 import com.ibm.domain.scanning.ScanMetadata;
-import com.ibm.domain.scanning.errors.CBOMSerializationFailed;
 import com.ibm.domain.scanning.errors.ScanResultForLanguageAlreadyExists;
-import com.ibm.infrastructure.errors.ClientDisconnected;
 import com.ibm.infrastructure.errors.EntityNotFoundById;
-import com.ibm.infrastructure.progress.IProgressDispatcher;
-import com.ibm.infrastructure.progress.ProgressMessage;
-import com.ibm.infrastructure.progress.ProgressMessageType;
 import com.ibm.infrastructure.scanning.IScanConfiguration;
 import com.ibm.usecases.scanning.commands.CloneGitRepositoryCommand;
 import com.ibm.usecases.scanning.commands.IdentifyPackageFolderCommand;
@@ -55,19 +49,12 @@ import com.ibm.usecases.scanning.errors.NoProjectDirectoryProvided;
 import com.ibm.usecases.scanning.errors.NoPurlSpecifiedForScan;
 import com.ibm.usecases.scanning.services.git.CloneResultDTO;
 import com.ibm.usecases.scanning.services.git.GitService;
-import com.ibm.usecases.scanning.services.indexing.IBuildType;
-import com.ibm.usecases.scanning.services.indexing.JavaIndexService;
-import com.ibm.usecases.scanning.services.indexing.ProjectModule;
-import com.ibm.usecases.scanning.services.indexing.PythonIndexService;
 import com.ibm.usecases.scanning.services.pkg.MavenPackageFinderService;
 import com.ibm.usecases.scanning.services.pkg.SetupPackageFinderService;
 import com.ibm.usecases.scanning.services.pkg.TomlPackageFinderService;
 import com.ibm.usecases.scanning.services.resolve.DepsDevService;
 import com.ibm.usecases.scanning.services.resolve.GithubPurlResolver;
 import com.ibm.usecases.scanning.services.resolve.PurlResolver;
-import com.ibm.usecases.scanning.services.scan.ScanResultDTO;
-import com.ibm.usecases.scanning.services.scan.java.JavaScannerService;
-import com.ibm.usecases.scanning.services.scan.python.PythonScannerService;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import java.io.File;
@@ -77,20 +64,30 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.pqca.errors.CBOMSerializationFailed;
+import org.pqca.errors.ClientDisconnected;
+import org.pqca.indexing.IBuildType;
+import org.pqca.indexing.ProjectModule;
+import org.pqca.indexing.java.JavaIndexService;
+import org.pqca.indexing.python.PythonIndexService;
+import org.pqca.progress.IProgressDispatcher;
+import org.pqca.progress.ProgressMessage;
+import org.pqca.progress.ProgressMessageType;
+import org.pqca.scanning.CBOM;
+import org.pqca.scanning.ScanResultDTO;
+import org.pqca.scanning.java.JavaScannerService;
+import org.pqca.scanning.python.PythonScannerService;
 
 public final class ScanProcessManager extends ProcessManager<ScanId, ScanAggregate> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ScanProcessManager.class);
 
     @Nonnull private final ScanId scanId;
     @Nonnull private final IProgressDispatcher progressDispatcher;
     @Nonnull private final String baseCloneDirPath;
-    @Nonnull private final String javaDependencyJARSPath;
 
     @Nullable private File projectDirectory;
     @Nonnull private final Map<Language, List<ProjectModule>> index;
     @Nonnull private final Map<Language, IBuildType> buildTypes;
+    @Nullable private final String javaJarsDirPath;
 
     public ScanProcessManager(
             @Nonnull ScanId scanId,
@@ -102,9 +99,9 @@ public final class ScanProcessManager extends ProcessManager<ScanId, ScanAggrega
         this.scanId = scanId;
         this.progressDispatcher = progressDispatcher;
         this.baseCloneDirPath = iScanConfiguration.getBaseCloneDirPath();
-        this.javaDependencyJARSPath = iScanConfiguration.getJavaDependencyJARSPath();
         this.index = new EnumMap<>(Language.class);
         this.buildTypes = new EnumMap<>(Language.class);
+        this.javaJarsDirPath = iScanConfiguration.getJavaDependencyJARSPath();
     }
 
     @Override
@@ -353,41 +350,43 @@ public final class ScanProcessManager extends ProcessManager<ScanId, ScanAggrega
             final long startTime = System.currentTimeMillis();
             int numberOfScannedLine;
             int numberOfScannedFiles;
-            CBOM cbom = null;
 
             // java
             final JavaScannerService javaScannerService =
                     new JavaScannerService(
                             this.progressDispatcher,
-                            this.javaDependencyJARSPath,
                             Optional.ofNullable(this.projectDirectory)
                                     .orElseThrow(NoProjectDirectoryProvided::new));
+            javaScannerService.setRequireBuild(false);
+            javaScannerService.addJavaDependencyJar(this.javaJarsDirPath);
+
             final ScanResultDTO javaScanResultDTO =
-                    javaScannerService.scan(
-                            gitUrl,
-                            scanAggregate.getRevision(),
-                            commit,
-                            scanAggregate.getPackageFolder().orElse(null),
-                            Optional.ofNullable(this.index.get(Language.JAVA))
-                                    .orElseThrow(NoIndexForProject::new));
+                    javaScannerService.scan(this.index.get(Language.JAVA));
             // update statistics
-            numberOfScannedLine = javaScanResultDTO.numberOfScannedLine();
+            numberOfScannedLine = javaScanResultDTO.numberOfScannedLines();
             numberOfScannedFiles = javaScanResultDTO.numberOfScannedFiles();
 
             if (javaScanResultDTO.cbom() != null) {
+                // add metadata
+                javaScanResultDTO
+                        .cbom()
+                        .addMetadata(
+                                gitUrl.value(),
+                                scanAggregate.getRevision().toString(),
+                                commit.hash(),
+                                scanAggregate.getPackageFolder().map(Path::toString).orElse(null));
                 // update statistics
-                cbom = javaScanResultDTO.cbom();
-
                 scanAggregate.reportScanResults(
                         new LanguageScan(
                                 Language.JAVA,
                                 new ScanMetadata(
                                         javaScanResultDTO.startTime(),
                                         javaScanResultDTO.endTime(),
-                                        javaScanResultDTO.numberOfScannedLine(),
+                                        javaScanResultDTO.numberOfScannedLines(),
                                         javaScanResultDTO.numberOfScannedFiles()),
                                 javaScanResultDTO.cbom()));
             }
+            CBOM consolidatedCBOM = javaScanResultDTO.cbom();
 
             // python
             final PythonScannerService pythonScannerService =
@@ -396,34 +395,37 @@ public final class ScanProcessManager extends ProcessManager<ScanId, ScanAggrega
                             Optional.ofNullable(this.projectDirectory)
                                     .orElseThrow(NoProjectDirectoryProvided::new));
             final ScanResultDTO pythonScanResultDTO =
-                    pythonScannerService.scan(
-                            gitUrl,
-                            scanAggregate.getRevision(),
-                            commit,
-                            scanAggregate.getPackageFolder().orElse(null),
-                            Optional.ofNullable(this.index.get(Language.PYTHON))
-                                    .orElseThrow(NoIndexForProject::new));
+                    pythonScannerService.scan(this.index.get(Language.PYTHON));
             // update statistics
-            numberOfScannedLine += pythonScanResultDTO.numberOfScannedLine();
+            numberOfScannedLine += pythonScanResultDTO.numberOfScannedLines();
             numberOfScannedFiles += pythonScanResultDTO.numberOfScannedFiles();
 
             if (pythonScanResultDTO.cbom() != null) {
-                // update statistics
-                if (cbom != null) {
-                    cbom.merge(pythonScanResultDTO.cbom());
-                } else {
-                    cbom = pythonScanResultDTO.cbom();
-                }
+                // add metadata
+                pythonScanResultDTO
+                        .cbom()
+                        .addMetadata(
+                                gitUrl.value(),
+                                scanAggregate.getRevision().toString(),
+                                commit.hash(),
+                                scanAggregate.getPackageFolder().map(Path::toString).orElse(null));
 
+                // update statistics
                 scanAggregate.reportScanResults(
                         new LanguageScan(
                                 Language.PYTHON,
                                 new ScanMetadata(
                                         pythonScanResultDTO.startTime(),
                                         pythonScanResultDTO.endTime(),
-                                        pythonScanResultDTO.numberOfScannedLine(),
+                                        pythonScanResultDTO.numberOfScannedLines(),
                                         pythonScanResultDTO.numberOfScannedFiles()),
                                 pythonScanResultDTO.cbom()));
+
+                if (consolidatedCBOM != null) {
+                    consolidatedCBOM.merge(pythonScanResultDTO.cbom());
+                } else {
+                    consolidatedCBOM = pythonScanResultDTO.cbom();
+                }
             }
 
             // publish scan finished and save state
@@ -445,7 +447,7 @@ public final class ScanProcessManager extends ProcessManager<ScanId, ScanAggrega
             this.progressDispatcher.send(
                     new ProgressMessage(
                             ProgressMessageType.CBOM,
-                            Optional.ofNullable(cbom)
+                            Optional.ofNullable(consolidatedCBOM)
                                     .orElseThrow(CBOMSerializationFailed::new)
                                     .toJSON()
                                     .toString()));
