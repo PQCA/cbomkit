@@ -17,14 +17,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.ibm.presentation.api.v1.scanning;
+package com.ibm.infrastructure.progress;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 
-public record ScanRequest(
-        @Nonnull @JsonProperty("scanUrl") String scanUrl,
-        @Nullable @JsonProperty("branch") String branch,
-        @Nullable @JsonProperty("subfolder") String subfolder,
-        @Nullable @JsonProperty("credentials") Credentials credentials) {}
+public class EmptyProgressDispatcher implements IProgressDispatcher {
+
+    @Override
+    public void send(@Nonnull ProgressMessage message) {
+        // do nothing
+    }
+}

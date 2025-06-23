@@ -35,7 +35,6 @@ public record GitUrl(@Nonnull String value) implements IValueObject {
     }
 
     @SuppressWarnings("all")
-    @Override
     public void validate() throws InvalidScanUrl {
         try {
             URI.create(value).toURL();

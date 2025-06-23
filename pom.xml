@@ -25,11 +25,11 @@
 
     <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
     <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
-    <quarkus.platform.version>3.23.0</quarkus.platform.version>
+    <quarkus.platform.version>3.23.3</quarkus.platform.version>
 
     <sonar.crypto.plugin.version>1.4.5</sonar.crypto.plugin.version>
     <sonar.plugin.api.version>12.0.0.2960</sonar.plugin.api.version>
-    <sonar.plugin.api.impl.version>25.5.0.107428</sonar.plugin.api.impl.version>
+    <sonar.plugin.api.impl.version>25.6.0.109173</sonar.plugin.api.impl.version>
 
     <cyclonedx-maven-plugin.version>2.9.1</cyclonedx-maven-plugin.version>
     <surefire-plugin.version>3.5.3</surefire-plugin.version>
@@ -37,10 +37,6 @@
   </properties>
 
   <repositories>
-    <repository>
-      <id>app-bootstrap</id>
-      <url>https://maven.pkg.github.com/n1ckl0sk0rtge/app-bootstrap-core</url>
-    </repository>
     <repository>
         <id>github</id>
         <url>https://maven.pkg.github.com/PQCA/sonar-cryptography</url>
@@ -95,14 +91,14 @@
     </dependency>
 
     <dependency>
-      <groupId>app.bootstrap.core</groupId>
+      <groupId>io.github.n1ckl0sk0rtge</groupId>
       <artifactId>app-bootstrap-core</artifactId>
-      <version>0.1.14</version>
+      <version>0.2.11</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jgit</groupId>
       <artifactId>org.eclipse.jgit</artifactId>
-      <version>7.2.1.202505142326-r</version>
+      <version>7.3.0.202506031305-r</version>
     </dependency>
     <dependency>
       <groupId>org.apache.httpcomponents.client5</groupId>
@@ -112,7 +108,7 @@
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-model</artifactId>
-      <version>3.9.9</version>
+      <version>3.9.10</version>
     </dependency>
     <dependency>
       <groupId>org.tomlj</groupId>

@@ -30,7 +30,6 @@ import java.net.URI;
 public record ScanUrl(@Nonnull String value) implements IValueObject {
 
     @SuppressWarnings("all")
-    @Override
     public void validate() throws InvalidScanUrl {
         if (value.startsWith("pkg:")) {
             try {

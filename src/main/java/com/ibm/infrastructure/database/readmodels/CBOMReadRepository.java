@@ -87,7 +87,8 @@ public final class CBOMReadRepository extends ReadRepository<UUID, CBOMReadModel
             return match;
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
-            if (QuarkusTransaction.isActive()) {
+            if (QuarkusTransaction.getStatus()
+                    != 6) { // https://github.com/quarkusio/quarkus/wiki/Migration-Guide-3.22#quarkustransactionisactive-deprecated
                 QuarkusTransaction.rollback();
             }
         } finally {
@@ -109,7 +110,8 @@ public final class CBOMReadRepository extends ReadRepository<UUID, CBOMReadModel
             return cbomReadModel;
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
-            if (QuarkusTransaction.isActive()) {
+            if (QuarkusTransaction.getStatus()
+                    != 6) { // https://github.com/quarkusio/quarkus/wiki/Migration-Guide-3.22#quarkustransactionisactive-deprecated
                 QuarkusTransaction.rollback();
             }
         } finally {
@@ -135,7 +137,8 @@ public final class CBOMReadRepository extends ReadRepository<UUID, CBOMReadModel
             QuarkusTransaction.commit();
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
-            if (QuarkusTransaction.isActive()) {
+            if (QuarkusTransaction.getStatus()
+                    != 6) { // https://github.com/quarkusio/quarkus/wiki/Migration-Guide-3.22#quarkustransactionisactive-deprecated
                 QuarkusTransaction.rollback();
             }
         } finally {
@@ -156,7 +159,8 @@ public final class CBOMReadRepository extends ReadRepository<UUID, CBOMReadModel
             QuarkusTransaction.commit();
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
-            if (QuarkusTransaction.isActive()) {
+            if (QuarkusTransaction.getStatus()
+                    != 6) { // https://github.com/quarkusio/quarkus/wiki/Migration-Guide-3.22#quarkustransactionisactive-deprecated
                 QuarkusTransaction.rollback();
             }
         } finally {
@@ -202,7 +206,8 @@ public final class CBOMReadRepository extends ReadRepository<UUID, CBOMReadModel
             return match;
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
-            if (QuarkusTransaction.isActive()) {
+            if (QuarkusTransaction.getStatus()
+                    != 6) { // https://github.com/quarkusio/quarkus/wiki/Migration-Guide-3.22#quarkustransactionisactive-deprecated
                 QuarkusTransaction.rollback();
             }
         } finally {
@@ -237,7 +242,8 @@ public final class CBOMReadRepository extends ReadRepository<UUID, CBOMReadModel
             return match;
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
-            if (QuarkusTransaction.isActive()) {
+            if (QuarkusTransaction.getStatus()
+                    != 6) { // https://github.com/quarkusio/quarkus/wiki/Migration-Guide-3.22#quarkustransactionisactive-deprecated
                 QuarkusTransaction.rollback();
             }
         } finally {

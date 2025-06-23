@@ -33,6 +33,25 @@ paths:
       tags:
       - CBOM Resource
   /api/v1/cbom/{projectIdentifier}:
+    post:
+      parameters:
+      - name: projectIdentifier
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+        required: true
+      responses:
+        "200":
+          description: OK
+      summary: Store CBOM
+      tags:
+      - CBOM Resource
     get:
       parameters:
       - name: projectIdentifier
@@ -44,6 +63,19 @@ paths:
         "200":
           description: OK
       summary: Get CBOM
+      tags:
+      - CBOM Resource
+    delete:
+      parameters:
+      - name: projectIdentifier
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+      summary: Delete CBOM
       tags:
       - CBOM Resource
   /api/v1/compliance/check:
@@ -86,6 +118,44 @@ paths:
           description: OK
       tags:
       - Compliance Resource
+  /api/v1/scan:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScanRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+      summary: Scan
+      tags:
+      - Scanning Resource
+components:
+  schemas:
+    Credentials:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        pat:
+          type: string
+    ScanRequest:
+      type: object
+      properties:
+        scanUrl:
+          type: string
+        branch:
+          type: string
+        subfolder:
+          type: string
+        credentials:
+          $ref: "#/components/schemas/Credentials"
 info:
   title: CBOMkit API
   version: 2.0.0-SNAPSHOT

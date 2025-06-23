@@ -17,14 +17,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.ibm.presentation.api.v1.scanning;
+package com.ibm.usecases.database.commands;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import app.bootstrap.core.cqrs.ICommand;
 import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 
-public record ScanRequest(
-        @Nonnull @JsonProperty("scanUrl") String scanUrl,
-        @Nullable @JsonProperty("branch") String branch,
-        @Nullable @JsonProperty("subfolder") String subfolder,
-        @Nullable @JsonProperty("credentials") Credentials credentials) {}
+/** Command to delete a CBOM identified by its project identifier. */
+public record DeleteCBOMCommand(@Nonnull String projectIdentifier) implements ICommand {}

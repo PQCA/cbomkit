@@ -20,9 +20,29 @@
 package com.ibm.presentation.api.v1.scanning;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.ibm.domain.scanning.authentication.ICredentials;
+import com.ibm.domain.scanning.authentication.PersonalAccessToken;
+import com.ibm.domain.scanning.authentication.UsernameAndPasswordCredentials;
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 public record Credentials(
         @Nullable @JsonProperty("username") String username,
         @Nullable @JsonProperty("password") String password,
-        @Nullable @JsonProperty("pat") String pat) {}
+        @Nullable @JsonProperty("pat") String pat) {
+
+    @Nullable public static ICredentials extractFrom(@Nonnull ScanRequest scanRequest) {
+        @Nullable ICredentials authCredentials = null;
+        final Credentials credentials = scanRequest.credentials();
+        if (credentials != null) {
+            if (credentials.username() != null && credentials.password() != null) {
+                authCredentials =
+                        new UsernameAndPasswordCredentials(
+                                credentials.username(), credentials.password());
+            } else if (credentials.pat() != null) {
+                authCredentials = new PersonalAccessToken(credentials.pat());
+            }
+        }
+        return authCredentials;
+    }
+}

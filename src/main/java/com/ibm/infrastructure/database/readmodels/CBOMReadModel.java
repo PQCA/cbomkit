@@ -31,7 +31,7 @@ import jakarta.annotation.Nullable;
 import jakarta.persistence.Cacheable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import java.sql.Timestamp;
+import java.util.Date;
 import java.util.UUID;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -64,7 +64,7 @@ public class CBOMReadModel extends PanacheEntityBase implements IReadModel<UUID>
     @Nullable protected String packageFolder;
 
     @Nullable protected String commit;
-    @Nonnull protected Timestamp createdAt;
+    @Nonnull protected Date createdAt;
 
     @Nonnull
     @JdbcTypeCode(SqlTypes.JSON)
@@ -78,7 +78,7 @@ public class CBOMReadModel extends PanacheEntityBase implements IReadModel<UUID>
             @Nullable String revision,
             @Nullable String packageFolder,
             @Nullable String commit,
-            @Nonnull Timestamp createdAt,
+            @Nonnull Date createdAt,
             @Nonnull JsonNode bom) {
         this.id = id;
         this.projectIdentifier = projectIdentifier;
@@ -120,7 +120,7 @@ public class CBOMReadModel extends PanacheEntityBase implements IReadModel<UUID>
     }
 
     @Nonnull
-    public Timestamp getCreatedAt() {
+    public Date getCreatedAt() {
         return createdAt;
     }
 

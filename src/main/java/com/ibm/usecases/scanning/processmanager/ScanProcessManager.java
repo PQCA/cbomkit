@@ -86,7 +86,6 @@ public final class ScanProcessManager extends ProcessManager<ScanId, ScanAggrega
 
     @Nullable private File projectDirectory;
     @Nonnull private final Map<Language, List<ProjectModule>> index;
-    @Nonnull private final Map<Language, IBuildType> buildTypes;
     @Nullable private final String javaJarsDirPath;
 
     public ScanProcessManager(
@@ -100,7 +99,6 @@ public final class ScanProcessManager extends ProcessManager<ScanId, ScanAggrega
         this.progressDispatcher = progressDispatcher;
         this.baseCloneDirPath = iScanConfiguration.getBaseCloneDirPath();
         this.index = new EnumMap<>(Language.class);
-        this.buildTypes = new EnumMap<>(Language.class);
         this.javaJarsDirPath = iScanConfiguration.getJavaDependencyJARSPath();
     }
 
@@ -300,18 +298,12 @@ public final class ScanProcessManager extends ProcessManager<ScanId, ScanAggrega
             final List<ProjectModule> javaIndex =
                     javaIndexService.index(scanAggregate.getPackageFolder().orElse(null));
             this.index.put(Language.JAVA, javaIndex);
-            javaIndexService
-                    .getMainBuildType()
-                    .ifPresent(buildType -> this.buildTypes.put(Language.JAVA, buildType));
             // python
             final PythonIndexService pythonIndexService =
                     new PythonIndexService(this.progressDispatcher, projectDir);
             final List<ProjectModule> pythonIndex =
                     pythonIndexService.index(scanAggregate.getPackageFolder().orElse(null));
             this.index.put(Language.PYTHON, pythonIndex);
-            pythonIndexService
-                    .getMainBuildType()
-                    .ifPresent(buildType -> this.buildTypes.put(Language.PYTHON, buildType));
             // continue with scan
             this.commandBus.send(new ScanCommand(command.id()));
         } catch (Exception e) {
@@ -464,7 +456,14 @@ public final class ScanProcessManager extends ProcessManager<ScanId, ScanAggrega
     @Override
     public void compensate(@Nonnull ScanId id) {
         // unregister process manager
-        this.commandBus.remove(this);
+        this.commandBus.unregister(
+                this,
+                List.of(
+                        ResolvePurlCommand.class,
+                        CloneGitRepositoryCommand.class,
+                        IdentifyPackageFolderCommand.class,
+                        IndexModulesCommand.class,
+                        ScanCommand.class));
         // remove cloned repo
         Optional.ofNullable(this.projectDirectory)
                 .ifPresent(
