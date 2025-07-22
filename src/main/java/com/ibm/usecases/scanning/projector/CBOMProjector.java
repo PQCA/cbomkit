@@ -23,13 +23,11 @@ import app.bootstrap.core.cqrs.Projector;
 import app.bootstrap.core.ddd.IDomainEvent;
 import app.bootstrap.core.ddd.IDomainEventBus;
 import app.bootstrap.core.ddd.IRepository;
-import com.ibm.domain.scanning.CBOM;
 import com.ibm.domain.scanning.Commit;
 import com.ibm.domain.scanning.GitUrl;
 import com.ibm.domain.scanning.LanguageScan;
 import com.ibm.domain.scanning.ScanAggregate;
 import com.ibm.domain.scanning.ScanId;
-import com.ibm.domain.scanning.errors.CBOMSerializationFailed;
 import com.ibm.domain.scanning.errors.NoValidProjectIdentifierForScan;
 import com.ibm.domain.scanning.events.ScanFinishedEvent;
 import com.ibm.infrastructure.database.readmodels.CBOMReadModel;
@@ -45,6 +43,8 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.pqca.errors.CBOMSerializationFailed;
+import org.pqca.scanning.CBOM;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,7 +94,7 @@ public class CBOMProjector extends Projector<UUID, CBOMReadModel> {
         final List<CBOM> cbomList =
                 scanAggregate
                         .getLanguageScans()
-                        .map(scans -> scans.stream().map(LanguageScan::icbom).toList())
+                        .map(scans -> scans.stream().map(LanguageScan::cbom).toList())
                         .orElseThrow(NoCBOMForScan::new);
         // merge CBOMs for each language
         CBOM mergedCBOM = null;

@@ -21,7 +21,6 @@ package com.ibm.infrastructure.scanning.repositories;
 
 import com.github.packageurl.MalformedPackageURLException;
 import com.github.packageurl.PackageURL;
-import com.ibm.domain.scanning.CBOM;
 import com.ibm.domain.scanning.Commit;
 import com.ibm.domain.scanning.GitUrl;
 import com.ibm.domain.scanning.Language;
@@ -30,7 +29,6 @@ import com.ibm.domain.scanning.Revision;
 import com.ibm.domain.scanning.ScanAggregate;
 import com.ibm.domain.scanning.ScanId;
 import com.ibm.domain.scanning.ScanMetadata;
-import com.ibm.domain.scanning.errors.CBOMSerializationFailed;
 import com.ibm.infrastructure.errors.AggregateReconstructionFailed;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.annotation.Nonnull;
@@ -49,6 +47,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.pqca.errors.CBOMSerializationFailed;
+import org.pqca.scanning.CBOM;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,7 +96,7 @@ class Scan extends PanacheEntityBase {
                                 languageScan.scanMetadata().endTime(),
                                 languageScan.scanMetadata().numberOfScannedLines(),
                                 languageScan.scanMetadata().numberOfScannedFiles(),
-                                languageScan.icbom().toJSON());
+                                languageScan.cbom().toJSON());
                 scanResultList.add(scanResult);
             } catch (CBOMSerializationFailed e) {
                 LOGGER.error(e.getMessage());

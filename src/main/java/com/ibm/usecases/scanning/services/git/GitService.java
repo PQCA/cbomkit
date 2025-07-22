@@ -25,10 +25,6 @@ import com.ibm.domain.scanning.Revision;
 import com.ibm.domain.scanning.authentication.ICredentials;
 import com.ibm.domain.scanning.authentication.PersonalAccessToken;
 import com.ibm.domain.scanning.authentication.UsernameAndPasswordCredentials;
-import com.ibm.infrastructure.errors.ClientDisconnected;
-import com.ibm.infrastructure.progress.IProgressDispatcher;
-import com.ibm.infrastructure.progress.ProgressMessage;
-import com.ibm.infrastructure.progress.ProgressMessageType;
 import com.ibm.usecases.scanning.errors.GitCloneFailed;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -42,11 +38,19 @@ import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
+import org.pqca.errors.ClientDisconnected;
+import org.pqca.progress.IProgressDispatcher;
+import org.pqca.progress.ProgressMessage;
+import org.pqca.progress.ProgressMessageType;
 
 public final class GitService {
-    @Nonnull private final IProgressDispatcher progressDispatcher;
+    @Nullable private final IProgressDispatcher progressDispatcher;
     @Nonnull private final String baseCloneDirPath;
     @Nullable private final ICredentials credentials;
+
+    public GitService(@Nonnull String baseCloneDirPath, @Nullable ICredentials credentials) {
+        this(null, baseCloneDirPath, credentials);
+    }
 
     public GitService(
             @Nonnull IProgressDispatcher progressDispatcher,
@@ -134,6 +138,10 @@ public final class GitService {
 
     @Nonnull
     private GitProgressMonitor getProgressMonitor() {
+        if (this.progressDispatcher == null) {
+            return null;
+        }
+
         return new GitProgressMonitor(
                 progressMessage -> {
                     try {

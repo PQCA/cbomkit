@@ -181,6 +181,12 @@
       <artifactId>snakeyaml</artifactId>
       <version>1.33</version>
   </dependency>
+
+    <dependency>
+      <groupId>org.pqca</groupId>
+      <artifactId>cbomkit-lib</artifactId>
+      <version>1.0.0</version>
+    </dependency>
   </dependencies>
 
   <build>

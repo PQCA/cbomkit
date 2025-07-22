@@ -22,7 +22,6 @@ package com.ibm.architecture;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 
 import com.ibm.domain.compliance.CryptographicAsset;
-import com.ibm.domain.scanning.CBOM;
 import com.ibm.domain.scanning.ScanAggregate;
 import com.ibm.domain.scanning.ScanUrl;
 import com.tngtech.archunit.core.importer.ImportOption;
@@ -30,6 +29,7 @@ import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
 import java.util.List;
+import org.pqca.scanning.CBOM;
 
 @AnalyzeClasses(packages = "com.ibm.domain", importOptions = ImportOption.DoNotIncludeTests.class)
 class DomainTest {
