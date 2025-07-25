@@ -31,6 +31,7 @@ import io.quarkus.narayana.jta.QuarkusTransaction;
 import jakarta.annotation.Nonnull;
 import jakarta.inject.Singleton;
 import jakarta.persistence.EntityManager;
+import jakarta.transaction.Status;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,7 +63,7 @@ public final class ScanRepository extends Repository<ScanId, ScanAggregate>
             return Optional.of(scanAggregate);
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
-            if (QuarkusTransaction.isActive()) {
+            if (QuarkusTransaction.getStatus() != Status.STATUS_NO_TRANSACTION) {
                 QuarkusTransaction.rollback();
             }
         } finally {
@@ -94,7 +95,7 @@ public final class ScanRepository extends Repository<ScanId, ScanAggregate>
             }
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
-            if (QuarkusTransaction.isActive()) {
+            if (QuarkusTransaction.getStatus() != Status.STATUS_NO_TRANSACTION) {
                 QuarkusTransaction.rollback();
             }
         } finally {
@@ -115,7 +116,7 @@ public final class ScanRepository extends Repository<ScanId, ScanAggregate>
             QuarkusTransaction.commit();
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
-            if (QuarkusTransaction.isActive()) {
+            if (QuarkusTransaction.getStatus() != Status.STATUS_NO_TRANSACTION) {
                 QuarkusTransaction.rollback();
             }
         } finally {

@@ -171,11 +171,6 @@
       <version>${google-java-format.version}</version>
     </dependency>
 
-    <dependency> <!-- Fixes issue #138 -->
-      <groupId>com.google.protobuf</groupId>
-      <artifactId>protobuf-java</artifactId>
-      <version>4.31.1</version> <!-- Use the latest stable version -->
-    </dependency>
     <dependency>
       <groupId>org.yaml</groupId>
       <artifactId>snakeyaml</artifactId>
