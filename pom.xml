@@ -27,10 +27,6 @@
     <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
     <quarkus.platform.version>3.23.3</quarkus.platform.version>
 
-    <sonar.crypto.plugin.version>1.4.5</sonar.crypto.plugin.version>
-    <sonar.plugin.api.version>13.0.0.3026</sonar.plugin.api.version>
-    <sonar.plugin.api.impl.version>25.6.0.109173</sonar.plugin.api.impl.version>
-
     <cyclonedx-maven-plugin.version>2.9.1</cyclonedx-maven-plugin.version>
     <surefire-plugin.version>3.5.3</surefire-plugin.version>
     <google-java-format.version>1.27.0</google-java-format.version>
@@ -119,32 +115,6 @@
       <groupId>org.ini4j</groupId>
       <artifactId>ini4j</artifactId>
       <version>0.5.4</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.ibm</groupId>
-      <artifactId>sonar-cryptography-plugin</artifactId>
-      <version>${sonar.crypto.plugin.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.sonarsource.analyzer-commons</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.woodstox</groupId>
-          <artifactId>woodstox-core</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.sonarsource.api.plugin</groupId>
-      <artifactId>sonar-plugin-api</artifactId>
-      <version>${sonar.plugin.api.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.sonarsource.sonarqube</groupId>
-      <artifactId>sonar-plugin-api-impl</artifactId>
-      <version>${sonar.plugin.api.impl.version}</version>
     </dependency>
 
     <dependency>
