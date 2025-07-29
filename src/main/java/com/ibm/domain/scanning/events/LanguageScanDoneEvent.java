@@ -26,18 +26,16 @@ import com.ibm.domain.scanning.ScanId;
 import jakarta.annotation.Nonnull;
 
 public final class LanguageScanDoneEvent extends DomainEvent {
-    @Nonnull private final ScanId scanId;
     @Nonnull private final Language language;
 
     public LanguageScanDoneEvent(@Nonnull ScanId scanId, @Nonnull Language language) {
         super(scanId, ScanAggregate.class, null);
-        this.scanId = scanId;
         this.language = language;
     }
 
     @Nonnull
     public ScanId getScanId() {
-        return scanId;
+        return (ScanId) this.aggregateId;
     }
 
     @Nonnull
@@ -50,7 +48,7 @@ public final class LanguageScanDoneEvent extends DomainEvent {
     public String toString() {
         return this.getClass().getSimpleName()
                 + "[scanId="
-                + scanId
+                + this.aggregateId
                 + ", language="
                 + language
                 + "]";

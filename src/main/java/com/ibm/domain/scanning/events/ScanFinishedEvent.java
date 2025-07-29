@@ -25,21 +25,19 @@ import com.ibm.domain.scanning.ScanId;
 import jakarta.annotation.Nonnull;
 
 public final class ScanFinishedEvent extends DomainEvent {
-    @Nonnull private final ScanId scanId;
 
     public ScanFinishedEvent(@Nonnull ScanId scanId) {
         super(scanId, ScanAggregate.class, null);
-        this.scanId = scanId;
     }
 
     @Nonnull
     public ScanId getScanId() {
-        return scanId;
+        return (ScanId) this.aggregateId;
     }
 
     @Nonnull
     @Override
     public String toString() {
-        return this.getClass().getSimpleName() + "[scanId=" + scanId + "]";
+        return this.getClass().getSimpleName() + "[scanId=" + this.aggregateId + "]";
     }
 }
