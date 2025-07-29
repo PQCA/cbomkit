@@ -21,10 +21,17 @@ package com.ibm.domain.scanning.errors;
 
 import app.bootstrap.core.ddd.DomainException;
 import com.ibm.domain.scanning.ScanId;
+import com.ibm.presentation.error.ErrorCodeGenerator;
+import com.ibm.presentation.error.ErrorType;
 import jakarta.annotation.Nonnull;
+import java.util.Map;
 
 public class GitUrlAlreadyResolved extends DomainException {
     public GitUrlAlreadyResolved(@Nonnull ScanId scanId) {
-        super("Source repo already exists in scan " + scanId);
+        super(
+                "Source repo already exists in scan " + scanId,
+                ErrorCodeGenerator.getInstance()
+                        .generateErrorCode(ErrorType.DOMAIN_EXCEPTION.getTypeIdentifier()),
+                Map.of("scanId", scanId));
     }
 }

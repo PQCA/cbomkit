@@ -20,9 +20,16 @@
 package com.ibm.domain.scanning.errors;
 
 import app.bootstrap.core.ddd.DomainException;
+import com.ibm.presentation.error.ErrorCodeGenerator;
+import com.ibm.presentation.error.ErrorType;
+import java.util.Collections;
 
 public class CBOMSerializationFailed extends DomainException {
     public CBOMSerializationFailed() {
-        super("Could not serialize CBOM to string");
+        super(
+                "Could not serialize CBOM to string",
+                ErrorCodeGenerator.getInstance()
+                        .generateErrorCode(ErrorType.DOMAIN_EXCEPTION.getTypeIdentifier()),
+                Collections.emptyMap());
     }
 }

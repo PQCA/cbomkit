@@ -20,6 +20,7 @@
 package com.ibm.domain.scanning.events;
 
 import app.bootstrap.core.ddd.DomainEvent;
+import com.ibm.domain.scanning.ScanAggregate;
 import com.ibm.domain.scanning.ScanId;
 import jakarta.annotation.Nonnull;
 
@@ -27,6 +28,7 @@ public final class RevisionIdentifiedEvent extends DomainEvent {
     @Nonnull private final ScanId scanId;
 
     public RevisionIdentifiedEvent(@Nonnull ScanId scanId) {
+        super(scanId, ScanAggregate.class, null);
         this.scanId = scanId;
     }
 

@@ -20,6 +20,7 @@
 package com.ibm.domain.scanning.events;
 
 import app.bootstrap.core.ddd.DomainEvent;
+import com.ibm.domain.scanning.ScanAggregate;
 import com.ibm.domain.scanning.ScanId;
 import com.ibm.domain.scanning.authentication.ICredentials;
 import jakarta.annotation.Nonnull;
@@ -31,6 +32,7 @@ public final class PurlScanRequestedEvent extends DomainEvent {
     @Nullable private final ICredentials credentials;
 
     public PurlScanRequestedEvent(@Nonnull ScanId scanId, @Nullable ICredentials credentials) {
+        super(scanId, ScanAggregate.class, null);
         this.scanId = scanId;
         this.credentials = credentials;
     }

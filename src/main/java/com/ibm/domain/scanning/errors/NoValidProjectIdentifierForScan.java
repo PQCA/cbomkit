@@ -21,10 +21,17 @@ package com.ibm.domain.scanning.errors;
 
 import app.bootstrap.core.ddd.DomainException;
 import com.ibm.domain.scanning.ScanId;
+import com.ibm.presentation.error.ErrorCodeGenerator;
+import com.ibm.presentation.error.ErrorType;
+import java.util.Map;
 import javax.annotation.Nonnull;
 
 public class NoValidProjectIdentifierForScan extends DomainException {
-    public NoValidProjectIdentifierForScan(@Nonnull ScanId id) {
-        super("Could not determine valid project identifier for scan with id " + id);
+    public NoValidProjectIdentifierForScan(@Nonnull ScanId scanId) {
+        super(
+                "Could not determine valid project identifier for scan with id " + scanId,
+                ErrorCodeGenerator.getInstance()
+                        .generateErrorCode(ErrorType.DOMAIN_EXCEPTION.getTypeIdentifier()),
+                Map.of("scanId", scanId));
     }
 }

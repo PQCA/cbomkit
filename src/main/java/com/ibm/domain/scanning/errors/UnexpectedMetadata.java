@@ -21,11 +21,18 @@ package com.ibm.domain.scanning.errors;
 
 import app.bootstrap.core.ddd.DomainException;
 import com.ibm.domain.scanning.ScanId;
+import com.ibm.presentation.error.ErrorCodeGenerator;
+import com.ibm.presentation.error.ErrorType;
 import jakarta.annotation.Nonnull;
+import java.util.Map;
 
 public class UnexpectedMetadata extends DomainException {
 
     public UnexpectedMetadata(@Nonnull ScanId scanId) {
-        super("Scan contains unexpected metadata: " + scanId);
+        super(
+                "Scan contains unexpected metadata: " + scanId,
+                ErrorCodeGenerator.getInstance()
+                        .generateErrorCode(ErrorType.DOMAIN_EXCEPTION.getTypeIdentifier()),
+                Map.of("scanId", scanId));
     }
 }

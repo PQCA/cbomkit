@@ -21,10 +21,17 @@ package com.ibm.domain.scanning.errors;
 
 import app.bootstrap.core.ddd.DomainException;
 import com.ibm.domain.scanning.ScanId;
+import com.ibm.presentation.error.ErrorCodeGenerator;
+import com.ibm.presentation.error.ErrorType;
 import jakarta.annotation.Nonnull;
+import java.util.Map;
 
 public class RevisionAlreadyExists extends DomainException {
     public RevisionAlreadyExists(@Nonnull ScanId scanId) {
-        super("Revision already exists in scan " + scanId);
+        super(
+                "Revision already exists in scan " + scanId,
+                ErrorCodeGenerator.getInstance()
+                        .generateErrorCode(ErrorType.DOMAIN_EXCEPTION.getTypeIdentifier()),
+                Map.of("scanId", scanId));
     }
 }
