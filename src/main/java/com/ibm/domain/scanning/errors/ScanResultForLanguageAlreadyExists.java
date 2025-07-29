@@ -22,10 +22,17 @@ package com.ibm.domain.scanning.errors;
 import app.bootstrap.core.ddd.DomainException;
 import com.ibm.domain.scanning.Language;
 import com.ibm.domain.scanning.ScanId;
+import com.ibm.presentation.error.ErrorCodeGenerator;
+import com.ibm.presentation.error.ErrorType;
 import jakarta.annotation.Nonnull;
+import java.util.Map;
 
 public class ScanResultForLanguageAlreadyExists extends DomainException {
     public ScanResultForLanguageAlreadyExists(@Nonnull ScanId scanId, @Nonnull Language language) {
-        super("Scan result for language " + language + " already exists for " + scanId);
+        super(
+                "Scan result for language " + language + " already exists for " + scanId,
+                ErrorCodeGenerator.getInstance()
+                        .generateErrorCode(ErrorType.DOMAIN_EXCEPTION.getTypeIdentifier()),
+                Map.of("scanId", scanId, "language", language));
     }
 }

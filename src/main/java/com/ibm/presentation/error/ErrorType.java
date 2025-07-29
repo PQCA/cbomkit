@@ -17,21 +17,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.ibm.domain.scanning.errors;
+package com.ibm.presentation.error;
 
-import app.bootstrap.core.ddd.DomainException;
-import com.ibm.domain.scanning.ScanId;
-import com.ibm.presentation.error.ErrorCodeGenerator;
-import com.ibm.presentation.error.ErrorType;
 import jakarta.annotation.Nonnull;
-import java.util.Map;
 
-public class GitUrlAlreadyResolved extends DomainException {
-    public GitUrlAlreadyResolved(@Nonnull ScanId scanId) {
-        super(
-                "Source repo already exists in scan " + scanId,
-                ErrorCodeGenerator.getInstance()
-                        .generateErrorCode(ErrorType.DOMAIN_EXCEPTION.getTypeIdentifier()),
-                Map.of("scanId", scanId));
+public enum ErrorType {
+    DOMAIN_EXCEPTION("DM01"),
+    APPLICATION_EXCEPTION("APP02"),
+    VALIDATION_EXCEPTION("VAL03"),
+    OPERATION_EXCEPTION("OP004");
+    private final String typeIdentifier;
+
+    ErrorType(@Nonnull String typeIdentifier) {
+        this.typeIdentifier = typeIdentifier;
+    }
+
+    public String getTypeIdentifier() {
+        return typeIdentifier;
     }
 }

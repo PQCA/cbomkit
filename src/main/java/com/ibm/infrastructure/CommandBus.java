@@ -93,16 +93,8 @@ public final class CommandBus implements ICommandBus {
     @Nonnull
     @Override
     public CompletableFuture<Boolean> send(@Nonnull ICommand command) throws Exception {
-        LOGGER.info("sending command {}", command);
-        final List<ICommandHandler> handlersForCommand = handlers.get(command.getClass());
-        if (handlersForCommand == null || handlersForCommand.isEmpty()) {
-            LOGGER.error("No handler for command {}", command);
-            return CompletableFuture.completedFuture(false);
-        }
-
         final CompletableFuture<Boolean> completableFuture = new CompletableFuture<>();
-        this.executorService.submit(
-                () -> completableFuture.complete(executeCommand(handlersForCommand, command)));
+        this.executorService.submit(() -> completableFuture.complete(sendSync(command)));
         return completableFuture;
     }
 
@@ -119,5 +111,17 @@ public final class CommandBus implements ICommandBus {
             }
         }
         return allSucceeded;
+    }
+
+    @Override
+    public Boolean sendSync(ICommand command) throws Exception {
+        LOGGER.info("sending command {}", command);
+        final List<ICommandHandler> handlersForCommand = handlers.get(command.getClass());
+        if (handlersForCommand == null || handlersForCommand.isEmpty()) {
+            LOGGER.error("No handler for command {}", command);
+            return false;
+        }
+
+        return executeCommand(handlersForCommand, command);
     }
 }

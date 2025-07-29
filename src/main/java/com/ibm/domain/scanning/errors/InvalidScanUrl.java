@@ -20,10 +20,17 @@
 package com.ibm.domain.scanning.errors;
 
 import app.bootstrap.core.ddd.DomainException;
+import com.ibm.presentation.error.ErrorCodeGenerator;
+import com.ibm.presentation.error.ErrorType;
 import jakarta.annotation.Nonnull;
+import java.util.Map;
 
 public class InvalidScanUrl extends DomainException {
     public InvalidScanUrl(@Nonnull String url) {
-        super("Invalid Scan URL: " + url);
+        super(
+                "Invalid Scan URL: " + url,
+                ErrorCodeGenerator.getInstance()
+                        .generateErrorCode(ErrorType.DOMAIN_EXCEPTION.getTypeIdentifier()),
+                Map.of("url", url));
     }
 }
