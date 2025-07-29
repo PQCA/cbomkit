@@ -24,8 +24,6 @@ import app.bootstrap.core.ddd.IDomainEventBus;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ibm.domain.scanning.ScanId;
 import com.ibm.domain.scanning.authentication.ICredentials;
-import com.ibm.infrastructure.progress.ProgressMessage;
-import com.ibm.infrastructure.progress.ProgressMessageType;
 import com.ibm.infrastructure.progress.WebSocketProgressDispatcher;
 import com.ibm.infrastructure.scanning.IScanConfiguration;
 import com.ibm.infrastructure.scanning.repositories.ScanRepository;
@@ -50,6 +48,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import org.pqca.progress.ProgressMessage;
+import org.pqca.progress.ProgressMessageType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

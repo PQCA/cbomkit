@@ -20,12 +20,14 @@
 package com.ibm.infrastructure.progress;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.ibm.infrastructure.errors.ClientDisconnected;
 import jakarta.annotation.Nonnull;
 import jakarta.websocket.Session;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.pqca.errors.ClientDisconnected;
+import org.pqca.progress.IProgressDispatcher;
+import org.pqca.progress.ProgressMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

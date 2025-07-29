@@ -17,19 +17,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.ibm.domain.scanning.errors;
+package com.ibm.presentation.error;
 
-import app.bootstrap.core.ddd.DomainException;
-import com.ibm.presentation.error.ErrorCodeGenerator;
-import com.ibm.presentation.error.ErrorType;
-import java.util.Collections;
+import jakarta.annotation.Nonnull;
 
-public class CBOMSerializationFailed extends DomainException {
-    public CBOMSerializationFailed() {
-        super(
-                "Could not serialize CBOM to string",
-                ErrorCodeGenerator.getInstance()
-                        .generateErrorCode(ErrorType.DOMAIN_EXCEPTION.getTypeIdentifier()),
-                Collections.emptyMap());
+public enum ErrorType {
+    DOMAIN_EXCEPTION("DM01"),
+    APPLICATION_EXCEPTION("APP02"),
+    VALIDATION_EXCEPTION("VAL03"),
+    OPERATION_EXCEPTION("OP004");
+    private final String typeIdentifier;
+
+    ErrorType(@Nonnull String typeIdentifier) {
+        this.typeIdentifier = typeIdentifier;
+    }
+
+    public String getTypeIdentifier() {
+        return typeIdentifier;
     }
 }
