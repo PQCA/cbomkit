@@ -28,18 +28,16 @@ import jakarta.annotation.Nullable;
 import java.util.Optional;
 
 public final class ScanRequestedEvent extends DomainEvent {
-    @Nonnull private final ScanId scanId;
     @Nullable private final ICredentials credentials;
 
     public ScanRequestedEvent(@Nonnull ScanId scanId, @Nullable ICredentials credentials) {
         super(scanId, ScanAggregate.class, null);
-        this.scanId = scanId;
         this.credentials = credentials;
     }
 
     @Nonnull
     public ScanId getScanId() {
-        return scanId;
+        return (ScanId) this.aggregateId;
     }
 
     @Nullable public ICredentials getCredentials() {
@@ -51,7 +49,7 @@ public final class ScanRequestedEvent extends DomainEvent {
     public String toString() {
         return this.getClass().getSimpleName()
                 + "[scanId="
-                + scanId
+                + this.aggregateId
                 + ", credentials="
                 + Optional.ofNullable(credentials)
                         .map(c -> c.getClass().getSimpleName())
