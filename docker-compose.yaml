@@ -17,6 +17,8 @@
 services:
   backend:
     image: ghcr.io/pqca/cbomkit:${CBOMKIT_VERSION}
+    depends_on:
+      - db
     environment:
       CBOMKIT_DB_TYPE: postgresql
       CBOMKIT_DB_JDBC_URL: jdbc:postgresql://db:5432/postgres
@@ -55,7 +57,7 @@ services:
       - dev-backend
       - viewer
   db:
-    image: postgres:16-alpine
+    image: docker.io/library/postgres:16-alpine
     user: postgres
     environment:
       POSTGRES_DB: postgres
@@ -86,7 +88,7 @@ services:
     profiles:
       - ext-compliance
   opa:
-    image: openpolicyagent/opa:0.66.0
+    image: docker.io/openpolicyagent/opa:0.66.0
     command:
       - "run"
       - "--addr=0.0.0.0:8181"
