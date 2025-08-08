@@ -25,7 +25,7 @@ make production
 ```
 
 Alternatively, if you wish to use podman instead of docker, run the following:
-```
+```shell
 # run the make command to start the docker compose using podman
 make production ENGINE=podman
 ```
