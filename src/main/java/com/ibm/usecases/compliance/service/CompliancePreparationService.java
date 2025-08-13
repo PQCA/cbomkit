@@ -29,7 +29,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-
 import org.cyclonedx.exception.ParseException;
 import org.cyclonedx.model.Bom;
 import org.cyclonedx.parsers.BomParserFactory;
@@ -48,9 +47,7 @@ public final class CompliancePreparationService {
                         .orElseThrow(() -> new CouldNotFindCBOMForGitRepository(projectIdentifier));
 
         final CBOM cbom = CBOM.formJSON(cbomReadModel.getBom());
-        return Optional.ofNullable(cbom.cycloneDXbom().getComponents())
-                .orElseGet(List::of)
-                .stream()
+        return Optional.ofNullable(cbom.cycloneDXbom().getComponents()).orElseGet(List::of).stream()
                 .map(component -> new CryptographicAsset(component.getBomRef(), component))
                 .toList();
     }
@@ -63,9 +60,7 @@ public final class CompliancePreparationService {
             Parser parser = BomParserFactory.createParser(cbomBytes);
             // Parse the BOM content
             Bom cycloneDXbom = parser.parse(cbomBytes);
-            return Optional.ofNullable(cycloneDXbom.getComponents())
-                    .orElseGet(List::of)
-                    .stream()
+            return Optional.ofNullable(cycloneDXbom.getComponents()).orElseGet(List::of).stream()
                     .map(component -> new CryptographicAsset(component.getBomRef(), component))
                     .toList();
         } catch (ParseException e) {
