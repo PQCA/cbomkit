@@ -363,7 +363,7 @@ public final class ScanProcessManager extends ProcessManager<ScanId, ScanAggrega
                         .cbom()
                         .addMetadata(
                                 gitUrl.value(),
-                                scanAggregate.getRevision().toString(),
+                                scanAggregate.getRevision().value(),
                                 commit.hash(),
                                 scanAggregate.getPackageFolder().map(Path::toString).orElse(null));
                 // update statistics
@@ -397,7 +397,7 @@ public final class ScanProcessManager extends ProcessManager<ScanId, ScanAggrega
                         .cbom()
                         .addMetadata(
                                 gitUrl.value(),
-                                scanAggregate.getRevision().toString(),
+                                scanAggregate.getRevision().value(),
                                 commit.hash(),
                                 scanAggregate.getPackageFolder().map(Path::toString).orElse(null));
 
