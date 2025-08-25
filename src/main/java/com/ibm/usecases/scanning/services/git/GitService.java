@@ -35,6 +35,7 @@ import java.util.UUID;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
@@ -112,7 +113,9 @@ public final class GitService {
                 if (commitHash == null) {
                     throw new GitCloneFailed("Commit not found for revision " + revision.value());
                 }
-                commit = new Commit(commitHash.abbreviate(7).name());
+                try (ObjectReader reader = clonedRepo.getRepository().newObjectReader()) {
+                    commit = new Commit(reader.abbreviate(commitHash, 7).name());
+                }
             }
 
             return new CloneResultDTO(commit, scanCloneFile);
