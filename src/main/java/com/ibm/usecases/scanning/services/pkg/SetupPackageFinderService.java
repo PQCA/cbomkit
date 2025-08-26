@@ -43,7 +43,7 @@ public class SetupPackageFinderService extends PackageFinderService {
     @Override
     public Optional<String> getPackageName(@Nonnull Path buildFile) {
         try {
-            if (buildFile.endsWith("cfg")) {
+            if (buildFile.endsWith("setup.cfg")) {
                 final Ini cfg = new Ini(buildFile.toFile());
                 return Optional.ofNullable(cfg.get("metadata", "name"));
             }

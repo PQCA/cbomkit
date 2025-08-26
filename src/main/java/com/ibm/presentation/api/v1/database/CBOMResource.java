@@ -21,18 +21,15 @@ package com.ibm.presentation.api.v1.database;
 
 import app.bootstrap.core.cqrs.ICommandBus;
 import app.bootstrap.core.cqrs.IQueryBus;
-import com.ibm.usecases.database.commands.DeleteCBOMCommand;
 import com.ibm.usecases.database.commands.StoreCBOMCommand;
 import com.ibm.usecases.database.errors.NoCBOMForProjectIdentifierFound;
+import com.ibm.usecases.database.queries.DeleteCBOMByProjectIdentifierQuery;
 import com.ibm.usecases.database.queries.GetCBOMByProjectIdentifierQuery;
 import com.ibm.usecases.database.queries.ListStoredCBOMsQuery;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.*;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.util.concurrent.ExecutionException;
@@ -105,7 +102,7 @@ public class CBOMResource {
         }
 
         try {
-            commandBus.send(new StoreCBOMCommand(projectIdentifier, cbomJson));
+            commandBus.send(new StoreCBOMCommand(projectIdentifier, cbomJson)).get();
             return Response.ok().build();
         } catch (Exception e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
@@ -120,20 +117,16 @@ public class CBOMResource {
         }
 
         try {
-            boolean success = this.commandBus.send(new DeleteCBOMCommand(projectIdentifier)).get();
-            if (success) {
-                return Response.ok().build();
-            } else {
-                return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-            }
+            this.queryBus.send(new DeleteCBOMByProjectIdentifierQuery(projectIdentifier)).get();
+            return Response.ok().build();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-        } catch (Exception e) {
+        } catch (ExecutionException e) {
             if (e.getCause() instanceof NoCBOMForProjectIdentifierFound) {
                 return Response.status(Response.Status.NOT_FOUND).build();
             }
-            return Response.status(Response.Status.NOT_FOUND).build();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
     }
 }
