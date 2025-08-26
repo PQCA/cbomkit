@@ -20,6 +20,7 @@ Starting the CBOMkit using `docker-compose`.
 ```shell
 # clone the repository 
 git clone https://github.com/PQCA/cbomkit
+cd cbomkit
 # run the make command to start the docker compose 
 make production
 ```
@@ -44,6 +45,7 @@ Deploy using the helm chart to a kubernetes environment. Pass the domain suffix 
 ```shell
 # clone the repository 
 git clone https://github.com/PQCA/cbomkit
+cd cbomkit
 # deploy using helm
 helm install cbomkit \
   --set common.clusterDomain={CLUSTER_DOMAIN} \
