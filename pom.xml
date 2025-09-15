@@ -28,7 +28,7 @@
     <quarkus.platform.version>3.25.3</quarkus.platform.version>
 
     <cyclonedx-maven-plugin.version>2.9.1</cyclonedx-maven-plugin.version>
-    <surefire-plugin.version>3.5.3</surefire-plugin.version>
+    <surefire-plugin.version>3.5.4</surefire-plugin.version>
     <google-java-format.version>1.28.0</google-java-format.version>
   </properties>
 
