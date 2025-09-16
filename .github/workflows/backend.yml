@@ -71,6 +71,9 @@ jobs:
         run: mvn -B clean package
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Update dependency graph
+        uses: advanced-security/maven-dependency-submission-action@v5
+        if: github.event_name != 'pull_request'
       - name: Create CBOM
         uses: PQCA/cbomkit-action@v2.1.1
         id: cbom
