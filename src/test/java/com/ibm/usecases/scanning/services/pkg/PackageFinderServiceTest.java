@@ -27,7 +27,6 @@ import io.quarkus.test.junit.QuarkusTest;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -36,22 +35,46 @@ import org.junit.jupiter.api.Test;
 public class PackageFinderServiceTest {
 
     @Test
-    @DisplayName("Test package finders")
-    void testPackageFinder() throws MalformedPackageURLException {
+    @DisplayName("Test maven package finder")
+    void testMavenPackageFinder() throws MalformedPackageURLException {
         File root = new File("testdata/nested");
         PackageURL purl = new PackageURL("pkg:test/nested/module");
-        List.of(
-                        new MavenPackageFinderService(root),
-                        new TomlPackageFinderService(root),
-                        new SetupPackageFinderService(root))
-                .forEach(
-                        packageFinder -> {
-                            Optional<Path> packagePath = packageFinder.findPackage(purl);
-                            assertThat(packagePath)
-                                    .hasValueSatisfying(
-                                            path ->
-                                                    assertThat(path)
-                                                            .isEqualTo(Paths.get("src/module")));
-                        });
+        PackageFinderService packageFinder = new MavenPackageFinderService(root);
+        Optional<Path> packagePath = packageFinder.findPackage(purl);
+        assertThat(packagePath)
+                .hasValueSatisfying(path -> assertThat(path).isEqualTo(Paths.get("src/module")));
+    }
+
+    @Test
+    @DisplayName("Test python package finder for pyproject.toml")
+    void testTomlPackageFinder() throws MalformedPackageURLException {
+        File root = new File("testdata/python");
+        PackageURL purl = new PackageURL("pkg:test/python/module_a");
+        PackageFinderService packageFinder = new PypiPackageFinderService(root);
+        Optional<Path> packagePath = packageFinder.findPackage(purl);
+        assertThat(packagePath)
+                .hasValueSatisfying(path -> assertThat(path).isEqualTo(Paths.get("module_a")));
+    }
+
+    @Test
+    @DisplayName("Test python package finder for setup.cfg")
+    void testSetupCfgPackageFinder() throws MalformedPackageURLException {
+        File root = new File("testdata/python");
+        PackageURL purl = new PackageURL("pkg:test/python/module_b");
+        PackageFinderService packageFinder = new PypiPackageFinderService(root);
+        Optional<Path> packagePath = packageFinder.findPackage(purl);
+        assertThat(packagePath)
+                .hasValueSatisfying(path -> assertThat(path).isEqualTo(Paths.get("module_b")));
+    }
+
+    @Test
+    @DisplayName("Test python package finder for setup.py]")
+    void testSetupPyPackageFinder() throws MalformedPackageURLException {
+        File root = new File("testdata/python");
+        PackageURL purl = new PackageURL("pkg:test/python/module_c");
+        PackageFinderService packageFinder = new PypiPackageFinderService(root);
+        Optional<Path> packagePath = packageFinder.findPackage(purl);
+        assertThat(packagePath)
+                .hasValueSatisfying(path -> assertThat(path).isEqualTo(Paths.get("module_c")));
     }
 }

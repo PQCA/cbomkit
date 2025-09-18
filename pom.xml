@@ -107,16 +107,10 @@
       <version>3.9.11</version>
     </dependency>
     <dependency>
-      <groupId>org.tomlj</groupId>
-      <artifactId>tomlj</artifactId>
-      <version>1.1.1</version>
+      <groupId>commons-configuration</groupId>
+      <artifactId>commons-configuration</artifactId>
+      <version>1.10</version>
     </dependency>
-    <dependency>
-      <groupId>org.ini4j</groupId>
-      <artifactId>ini4j</artifactId>
-      <version>0.5.4</version>
-    </dependency>
-
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-junit5</artifactId>

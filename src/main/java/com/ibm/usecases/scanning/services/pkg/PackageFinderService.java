@@ -50,18 +50,14 @@ public abstract class PackageFinderService {
                     walk.filter(p -> !Files.isDirectory(p)).filter(this::isBuildFile).toList();
             for (final Path pomPath : poms) {
                 final Optional<String> possiblePackageName = getPackageName(pomPath);
-                if (possiblePackageName.isEmpty()) {
-                    continue;
+                if (!possiblePackageName.isEmpty()) {
+                    final String packageName = possiblePackageName.get();
+                    if (purl.getName().equals(packageName)) {
+                        final Path pkgPath = this.root.relativize(pomPath.getParent());
+                        LOGGER.info("Identified package folder: {}", pkgPath);
+                        return Optional.of(pkgPath);
+                    }
                 }
-                final String packageName = possiblePackageName.get();
-
-                if (!purl.getName().equals(packageName)) {
-                    continue;
-                }
-
-                final Path pkgPath = this.root.relativize(pomPath.getParent());
-                LOGGER.info("Identified package folder: {}", pkgPath);
-                return Optional.of(pkgPath);
             }
         } catch (Exception e) {
             LOGGER.error("Failed to find package folder: {}", e.getLocalizedMessage());
