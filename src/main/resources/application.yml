@@ -5,7 +5,7 @@ quarkus:
     host: 0.0.0.0
     port: ${CBOMKIT_PORT:8081}
     cors:
-      ~: true
+      enabled: true
       origins: ${CBOMKIT_FRONTEND_URL_CORS:http://localhost:8001}
   datasource:
     db-kind: ${CBOMKIT_DB_TYPE:postgresql}
@@ -14,9 +14,14 @@ quarkus:
     jdbc:
       url: ${CBOMKIT_DB_JDBC_URL:jdbc:postgresql://localhost:5432/postgres}
   hibernate-orm:
-    database:
-      generation: "update"
-      # generation: "drop-and-create"
+    schema-management:
+      strategy: "update"
+      # strategy: "drop-and-create"
+    mapping:
+      format:
+        global: "ignore"
+  jackson:
+    write-dates-as-timestamps: true
   websocket:
     dispatch-to-worker: true
   smallrye-openapi:
