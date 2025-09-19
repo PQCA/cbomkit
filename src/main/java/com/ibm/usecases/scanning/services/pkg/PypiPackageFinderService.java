@@ -27,45 +27,54 @@ import java.nio.file.Path;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.ini4j.Ini;
+import org.apache.commons.configuration.HierarchicalINIConfiguration;
 
-public class SetupPackageFinderService extends PackageFinderService {
+public class PypiPackageFinderService extends PackageFinderService {
 
-    public SetupPackageFinderService(@Nonnull File rootFile) throws IllegalArgumentException {
+    public static final String PYPROJECT_TOML = "pyproject.toml";
+    public static final String SETUP_CFG = "setup.cfg";
+    public static final String SETUP_PY = "setup.py";
+
+    public static final String PYPROJECT_TOML_KEY = "project.name";
+    public static final String SETUP_CFG_KEY = "metadata.name";
+
+    public static final Pattern SETUP_PY_PATTERN =
+            Pattern.compile("name\\s*=\\s*['\"]([^'\"]*)['\"]");
+
+    public PypiPackageFinderService(@Nonnull File rootFile) throws IllegalArgumentException {
         super(rootFile);
     }
 
     @Override
     public boolean isBuildFile(@Nonnull Path file) {
-        return file.endsWith("setup.cfg") || file.endsWith("setup.py");
+        return file.endsWith(SETUP_CFG) || file.endsWith(SETUP_PY) || file.endsWith(PYPROJECT_TOML);
     }
 
     @Override
-    public Optional<String> getPackageName(@Nonnull Path buildFile) {
-        try {
-            if (buildFile.endsWith("setup.cfg")) {
-                final Ini cfg = new Ini(buildFile.toFile());
-                return Optional.ofNullable(cfg.get("metadata", "name"));
-            }
+    public Optional<String> getPackageName(@Nonnull Path buildFile) throws Exception {
+        if (buildFile.endsWith(SETUP_PY)) {
             return findPackageNameUsingRegex(buildFile);
-        } catch (Exception e) {
-            return Optional.empty();
         }
+
+        final HierarchicalINIConfiguration cfg =
+                new HierarchicalINIConfiguration(buildFile.toFile());
+        if (buildFile.endsWith(SETUP_CFG)) {
+            return Optional.ofNullable(cfg.getString(SETUP_CFG_KEY));
+        } else if (buildFile.endsWith(PYPROJECT_TOML)) {
+            return Optional.ofNullable(cfg.getString(PYPROJECT_TOML_KEY));
+        }
+
+        return Optional.empty();
     }
 
     @Nonnull
     private Optional<String> findPackageNameUsingRegex(@Nonnull Path buildFile) throws Exception {
         try (BufferedReader reader = new BufferedReader(new FileReader(buildFile.toFile()))) {
-            final Pattern pattern = Pattern.compile("name\\s*=\\s*['\"]([^'\"]*)['\"]");
-            String line;
-
-            while ((line = reader.readLine()) != null) {
-                final Matcher matcher = pattern.matcher(line);
-                if (matcher.find()) {
-                    return Optional.ofNullable(matcher.group(1));
-                }
-            }
+            return reader.lines()
+                    .map(line -> SETUP_PY_PATTERN.matcher(line))
+                    .filter(Matcher::find)
+                    .map(matcher -> matcher.group(1))
+                    .findFirst();
         }
-        return Optional.empty();
     }
 }

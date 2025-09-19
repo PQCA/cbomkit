@@ -50,8 +50,7 @@ import com.ibm.usecases.scanning.errors.NoPurlSpecifiedForScan;
 import com.ibm.usecases.scanning.services.git.CloneResultDTO;
 import com.ibm.usecases.scanning.services.git.GitService;
 import com.ibm.usecases.scanning.services.pkg.MavenPackageFinderService;
-import com.ibm.usecases.scanning.services.pkg.SetupPackageFinderService;
-import com.ibm.usecases.scanning.services.pkg.TomlPackageFinderService;
+import com.ibm.usecases.scanning.services.pkg.PypiPackageFinderService;
 import com.ibm.usecases.scanning.services.resolve.DepsDevService;
 import com.ibm.usecases.scanning.services.resolve.GithubPurlResolver;
 import com.ibm.usecases.scanning.services.resolve.PurlResolver;
@@ -253,10 +252,7 @@ public final class ScanProcessManager extends ProcessManager<ScanId, ScanAggrega
                     packagePath = new MavenPackageFinderService(dir).findPackage(purl);
                 } else if (purl.getType().equals(PackageURL.StandardTypes.PYPI)) {
                     // python
-                    packagePath = new TomlPackageFinderService(dir).findPackage(purl);
-                    if (packagePath.isEmpty()) {
-                        packagePath = new SetupPackageFinderService(dir).findPackage(purl);
-                    }
+                    packagePath = new PypiPackageFinderService(dir).findPackage(purl);
                 }
                 // update aggregate
                 if (packagePath.isPresent()) {
