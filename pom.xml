@@ -144,7 +144,7 @@
     <dependency> <!-- Fixes issue #138 -->
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
-      <version>4.32.0</version> <!-- Use the latest stable version -->
+      <version>4.32.1</version> <!-- Use the latest stable version -->
     </dependency>
 
     <dependency>
