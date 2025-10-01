@@ -182,9 +182,9 @@ function setCodeOrigin(gitBranch, gitSubfolder) {
     if (!model.codeOrigin.scanUrl.startsWith("pkg:")) {
       // normalize scanUrl
       model.codeOrigin.scanUrl = model.codeOrigin.scanUrl
-          .replace(/^http:\/\//, "")
+          .replace(/^scm:git:git:\/\//, "")
           .replace(/.git$/, "");
-      if (!model.codeOrigin.scanUrl.startsWith("https://")) {
+      if (!model.codeOrigin.scanUrl.contain("://")) {
         model.codeOrigin.scanUrl = "https://" + model.codeOrigin.scanUrl;
       }
     }

@@ -28,8 +28,11 @@ import java.net.URI;
 public record GitUrl(@Nonnull String value) implements IValueObject {
     // normalize value
     public GitUrl {
-        value = value.replaceAll(".git$", "").replaceAll("^http://", "");
-        if (!value.startsWith("https://")) {
+        value =
+                value.replaceAll(".git$", "")
+                        // .replaceAll("^http://", "")
+                        .replaceAll("^scm:git:git://", "");
+        if (!value.contains("://")) {
             value = "https://" + value;
         }
     }
