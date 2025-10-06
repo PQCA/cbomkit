@@ -21,15 +21,18 @@ package com.ibm.usecases.scanning.services.git;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.ibm.domain.scanning.Commit;
 import com.ibm.domain.scanning.GitUrl;
 import com.ibm.domain.scanning.ScanAggregate;
 import com.ibm.infrastructure.Configuration;
+import com.ibm.usecases.scanning.errors.GitCloneFailed;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
-import java.io.IOException;
+import java.io.File;
 import org.apache.commons.io.FileUtils;
+import org.eclipse.jgit.api.errors.TransportException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -39,7 +42,7 @@ public class GitServiceTest {
 
     @Test
     @DisplayName("Test of git clone")
-    void testGitClone() throws IOException {
+    void testGitClone() {
         GitUrl gitUrl = new GitUrl("https://github.com/mastercard/client-encryption-java");
         Commit commit = new Commit("1b27c1d");
 
@@ -58,5 +61,28 @@ public class GitServiceTest {
                             FileUtils.deleteDirectory(git.directory());
                         })
                 .doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("Test of git clone fail")
+    void testGitCloneFail() {
+        GitUrl gitUrl = new GitUrl("http://svn.apache.org/viewvc/commons/proper/codec/trunk");
+
+        assertThatThrownBy(
+                        () -> {
+                            GitService gitService =
+                                    new GitService(config.getBaseCloneDirPath(), null);
+                            gitService.clone(gitUrl, ScanAggregate.REVISION_MAIN, null);
+                        })
+                .isInstanceOf(GitCloneFailed.class)
+                .hasMessage("Git clone from " + gitUrl.value() + " failed")
+                .hasCauseInstanceOf(TransportException.class)
+                .cause()
+                .hasMessage(
+                        gitUrl.value()
+                                + ": Authentication is required but no CredentialsProvider has been registered");
+
+        // Test that no clone dir was left
+        assertThat(new File(config.getBaseCloneDirPath()).list()).isEmpty();
     }
 }
