@@ -332,6 +332,7 @@ public final class ScanProcessManager extends ProcessManager<ScanId, ScanAggrega
                             .getGitUrl()
                             .orElseThrow(() -> new NoGitUrlSpecifiedForScan(scanId));
             final Commit commit = scanAggregate.getCommit().orElseThrow(NoCommitProvided::new);
+            Optional.of(this.index).filter(m -> !m.isEmpty()).orElseThrow(NoIndexForProject::new);
 
             // progress scan statistics
             final long startTime = System.currentTimeMillis();
@@ -443,8 +444,9 @@ public final class ScanProcessManager extends ProcessManager<ScanId, ScanAggrega
         } catch (Exception | NoSuchMethodError e) { // catch NoSuchMethodError: see issue #138
             this.progressDispatcher.send(
                     new ProgressMessage(ProgressMessageType.ERROR, e.getMessage()));
-            this.compensate(command.id());
             throw e;
+        } finally {
+            this.compensate(command.id());
         }
     }
 
