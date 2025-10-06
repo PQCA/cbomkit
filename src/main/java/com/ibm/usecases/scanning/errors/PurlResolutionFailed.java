@@ -22,7 +22,7 @@ package com.ibm.usecases.scanning.errors;
 import jakarta.annotation.Nonnull;
 
 public class PurlResolutionFailed extends Exception {
-    public PurlResolutionFailed(@Nonnull String purl, @Nonnull String additional) {
-        super("Resolution failed for PURL: " + purl + "; " + additional);
+    public PurlResolutionFailed(@Nonnull String purl, @Nonnull Throwable t) {
+        super("Could not resolve " + purl, t);
     }
 }
