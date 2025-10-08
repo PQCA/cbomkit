@@ -68,6 +68,7 @@ public class GitServiceTest {
     void testGitCloneFail() {
         GitUrl gitUrl = new GitUrl("http://svn.apache.org/viewvc/commons/proper/codec/trunk");
 
+        int numCloneDirs = new File(config.getBaseCloneDirPath()).list().length;
         assertThatThrownBy(
                         () -> {
                             GitService gitService =
@@ -83,6 +84,6 @@ public class GitServiceTest {
                                 + ": Authentication is required but no CredentialsProvider has been registered");
 
         // Test that no clone dir was left
-        assertThat(new File(config.getBaseCloneDirPath()).list()).isEmpty();
+        assertThat(new File(config.getBaseCloneDirPath()).list()).hasSize(numCloneDirs);
     }
 }
