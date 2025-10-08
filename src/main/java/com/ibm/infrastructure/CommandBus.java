@@ -107,6 +107,9 @@ public final class CommandBus implements ICommandBus {
                 handler.handle(command);
             } catch (Exception e) {
                 LOGGER.error(e.getMessage());
+                if (e.getCause() != null) {
+                    LOGGER.error("Caused by: {}", e.getCause().getMessage());
+                }
                 allSucceeded = false;
             }
         }

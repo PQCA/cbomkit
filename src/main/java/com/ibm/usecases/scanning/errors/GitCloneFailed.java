@@ -23,4 +23,8 @@ public class GitCloneFailed extends Exception {
     public GitCloneFailed(String message) {
         super(message);
     }
+
+    public GitCloneFailed(String message, Throwable t) {
+        super(message, t);
+    }
 }

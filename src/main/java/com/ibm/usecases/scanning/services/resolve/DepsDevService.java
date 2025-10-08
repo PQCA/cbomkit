@@ -70,7 +70,7 @@ public class DepsDevService implements PurlResolver {
                     }
                 }
             }
-            throw new IOException("Invalid deps.dev response");
+            throw new IOException("Failed to extract source repo from deps.dev response");
         }
     }
 
@@ -91,7 +91,7 @@ public class DepsDevService implements PurlResolver {
             LOGGER.info("Identified git repository {} for purl {}", srcRepo, purlStr);
             return new GitUrl(srcRepo);
         } catch (IOException ioe) {
-            throw new PurlResolutionFailed(purlStr, ioe.getMessage());
+            throw new PurlResolutionFailed(purlStr, ioe);
         }
     }
 }

@@ -19,6 +19,8 @@
  */
 package com.ibm.usecases.scanning.services.git;
 
+import static com.ibm.output.IAggregator.LOGGER;
+
 import com.ibm.domain.scanning.Commit;
 import com.ibm.domain.scanning.GitUrl;
 import com.ibm.domain.scanning.Revision;
@@ -31,7 +33,11 @@ import jakarta.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ObjectId;
@@ -62,12 +68,22 @@ public final class GitService {
         this.credentials = credentials;
     }
 
+    @Nullable private static String extractVersion(String rev) {
+        if (rev == null || rev.isEmpty()) {
+            return null;
+        }
+
+        Matcher matcher = Pattern.compile("\\b(\\d+(?:\\.\\d+)+)\\b").matcher(rev);
+
+        return matcher.find() ? matcher.group(1) : null;
+    }
+
     @Nonnull
     public CloneResultDTO clone(
             @Nonnull GitUrl gitUrl, @Nonnull Revision revision, @Nullable Commit commit)
             throws GitCloneFailed, ClientDisconnected {
+        final File scanCloneFile = createDirectory();
         try {
-            final File scanCloneFile = createDirectory();
             final Git clonedRepo =
                     Git.cloneRepository()
                             .setProgressMonitor(getProgressMonitor())
@@ -94,17 +110,27 @@ public final class GitService {
                 }
             } else {
                 final List<Ref> refs = clonedRepo.tagList().call();
-                Ref ref =
-                        refs.stream()
-                                .filter(r -> r.getName().endsWith(revision.value()))
-                                .findFirst()
-                                .orElse(null);
+                // Try to find a tag matching the exact revision string first ...
+                Ref ref = clonedRepo.getRepository().findRef(revision.value());
                 if (ref == null) {
-                    ref = clonedRepo.getRepository().findRef(revision.value());
+                    //  ... otherwise extract the version (only numbers and dots)
+                    // and try to find a tag that ends with this version
+                    // (separated by . or _)
+                    final String version = extractVersion(revision.value());
+                    final String alternative = version.replaceAll("\\.", "_");
+                    ref =
+                            refs.stream()
+                                    .filter(
+                                            r ->
+                                                    r.getName().endsWith(version)
+                                                            || r.getName().endsWith(alternative))
+                                    .findFirst()
+                                    .orElse(null);
                 }
                 if (ref == null) {
                     throw new GitCloneFailed("Revision not found: " + revision.value());
                 }
+                LOGGER.info("Found revision {}", ref.getName());
 
                 ObjectId commitHash = ref.getPeeledObjectId(); // only works for tagged versions
                 if (commitHash == null) {
@@ -120,7 +146,16 @@ public final class GitService {
 
             return new CloneResultDTO(commit, scanCloneFile);
         } catch (GitAPIException | GitCloneFailed | IOException e) {
-            throw new GitCloneFailed("Git clone failed: " + e.getMessage());
+            Optional.ofNullable(scanCloneFile)
+                    .ifPresent(
+                            dir -> {
+                                try {
+                                    FileUtils.deleteDirectory(dir);
+                                } catch (IOException e1) {
+                                    // do nothing
+                                }
+                            });
+            throw new GitCloneFailed("Git clone from " + gitUrl.value() + " failed", e);
         }
     }
 
