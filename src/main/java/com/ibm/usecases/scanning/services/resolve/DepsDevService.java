@@ -83,7 +83,11 @@ public class DepsDevService implements PurlResolver {
                 new HttpGet(DEPS_DEV_URI + URLEncoder.encode(purlStr, StandardCharsets.UTF_8));
 
         try (final CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
-            final String srcRepo = httpClient.execute(request, new DepsDevResponseHandler());
+            final String srcRepo =
+                    httpClient
+                            .execute(request, new DepsDevResponseHandler())
+                            .replaceAll("scm:git:git://", "https://")
+                            .replaceAll(".git$", "");
             LOGGER.info("Identified git repository {} for purl {}", srcRepo, purlStr);
             return new GitUrl(srcRepo);
         } catch (IOException ioe) {

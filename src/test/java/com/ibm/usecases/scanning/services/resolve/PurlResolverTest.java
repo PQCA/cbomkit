@@ -49,6 +49,25 @@ public class PurlResolverTest {
     }
 
     @Test
+    @DisplayName("Test of prefix and suffix normalization")
+    void testNormalizeResolve() {
+        assertThatCode(
+                        () -> {
+                            PurlResolver resolver = new DepsDevService();
+                            GitUrl gitUrl =
+                                    resolver.resolve(
+                                            new PackageURL(
+                                                    "pkg:maven/com.jayway.jsonpath/json-path@2.9.0"));
+                            gitUrl.validate();
+                            // normalization result of
+                            // "scm:git:git://github.com/jayway/JsonPath.git"
+                            assertThat(gitUrl.value())
+                                    .isEqualTo("https://github.com/jayway/JsonPath");
+                        })
+                .doesNotThrowAnyException();
+    }
+
+    @Test
     @DisplayName("Test of Github Purl resolution")
     void testGithubResolve() {
         assertThatCode(
