@@ -22,8 +22,6 @@ package com.ibm.domain.scanning.errors;
 import app.bootstrap.core.ddd.DomainException;
 import com.ibm.domain.scanning.Language;
 import com.ibm.domain.scanning.ScanId;
-import com.ibm.presentation.error.ErrorCodeGenerator;
-import com.ibm.presentation.error.ErrorType;
 import jakarta.annotation.Nonnull;
 import java.util.Map;
 
