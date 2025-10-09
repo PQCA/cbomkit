@@ -17,7 +17,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.ibm.presentation.error;
+package com.ibm.domain.scanning.errors;
 
 import jakarta.annotation.Nonnull;
 

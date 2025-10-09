@@ -19,6 +19,8 @@
  */
 package com.ibm.architecture;
 
+import static com.tngtech.archunit.core.domain.JavaClass.Predicates.assignableTo;
+import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAnyPackage;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 
 import com.ibm.domain.compliance.CryptographicAsset;
@@ -28,55 +30,50 @@ import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
-import java.util.List;
 import org.pqca.scanning.CBOM;
 
 @AnalyzeClasses(packages = "com.ibm.domain", importOptions = ImportOption.DoNotIncludeTests.class)
 class DomainTest {
 
-    private static final List<String> allowedDomainClasses =
-            List.of(
-                    "..domain..",
-                    "java..",
-                    "javax..",
-                    "app.bootstrap.core.ddd..",
-                    "jakarta.annotation..");
+    private static final String[] allowedDomainClasses = {
+        "..domain..",
+        "java..",
+        "javax..",
+        "app.bootstrap.core.ddd..",
+        "jakarta.annotation..",
+        "jakarta.inject..",
+        "org.cyclonedx.model..",
+        "com.github.packageurl.." // to not replicate packageUrl object
+    };
 
-    private static final List<String> cbomAndCryptographicAssetDomainClasses =
-            List.of(
-                    "..domain..",
-                    "java..",
-                    "javax..",
-                    "app.bootstrap.core.ddd..",
-                    "jakarta.annotation..",
-                    "org.cyclonedx..", // to not replicate bom object
-                    "com.fasterxml.jackson.databind.." // dependency need for cyclonedx lib
-                    );
+    private static final String[] cbomAndCryptographicAssetDomainClasses = {
+        "..domain..",
+        "java..",
+        "javax..",
+        "app.bootstrap.core.ddd..",
+        "jakarta.annotation..",
+        "org.cyclonedx.model.." // to not replicate bom object
+    };
 
-    private static final List<String> scanAggregateAndScanUrlDomainClasses =
-            List.of(
-                    "..domain..",
-                    "java..",
-                    "javax..",
-                    "app.bootstrap.core.ddd..",
-                    "jakarta.annotation..",
-                    "com.github.packageurl.." // to not replicate packageUrl object
-                    );
+    private static final String[] scanAggregateAndScanUrlDomainClasses = {
+        "..domain..",
+        "java..",
+        "javax..",
+        "app.bootstrap.core.ddd..",
+        "jakarta.annotation..",
+        "com.github.packageurl.." // to not replicate packageUrl object
+    };
 
     @ArchTest
     static final ArchRule defaultDomainIsolation =
             classes()
                     .should()
-                    .onlyDependOnClassesThat()
-                    .resideInAnyPackage(allowedDomainClasses.toArray(String[]::new))
-                    .orShould()
-                    .beAssignableTo(CBOM.class)
-                    .orShould()
-                    .beAssignableTo(CryptographicAsset.class)
-                    .orShould()
-                    .beAssignableTo(ScanAggregate.class)
-                    .orShould()
-                    .beAssignableTo(ScanUrl.class);
+                    .onlyDependOnClassesThat(
+                            resideInAnyPackage(allowedDomainClasses)
+                                    .or(assignableTo(CBOM.class))
+                                    .or(assignableTo(CryptographicAsset.class))
+                                    .or(assignableTo(ScanAggregate.class))
+                                    .or(assignableTo(ScanUrl.class)));
 
     @ArchTest
     static final ArchRule cbomAndCryptographicAssetDomainIsolation =
@@ -87,8 +84,7 @@ class DomainTest {
                     .areAssignableTo(CryptographicAsset.class)
                     .should()
                     .onlyDependOnClassesThat()
-                    .resideInAnyPackage(
-                            cbomAndCryptographicAssetDomainClasses.toArray(String[]::new));
+                    .resideInAnyPackage(cbomAndCryptographicAssetDomainClasses);
 
     @ArchTest
     static final ArchRule scanAggregateAndScanUrlDomainIsolation =
@@ -99,6 +95,5 @@ class DomainTest {
                     .areAssignableTo(ScanUrl.class)
                     .should()
                     .onlyDependOnClassesThat()
-                    .resideInAnyPackage(
-                            scanAggregateAndScanUrlDomainClasses.toArray(String[]::new));
+                    .resideInAnyPackage(scanAggregateAndScanUrlDomainClasses);
 }
