@@ -29,7 +29,7 @@
 
     <cyclonedx-maven-plugin.version>2.9.1</cyclonedx-maven-plugin.version>
     <surefire-plugin.version>3.5.4</surefire-plugin.version>
-    <google-java-format.version>1.28.0</google-java-format.version>
+    <google-java-format.version>1.30.0</google-java-format.version>
   </properties>
 
   <repositories>
